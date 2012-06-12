@@ -1,19 +1,16 @@
 
 import re
-regexp = re.compile(r'.*From the file "(.*)"')
+regexp = re.compile(r'# SNIP (.*)\n')
 
-s = open("lemon.c")
-out = open("preamble.c", "w")
+s = open("lemon.py")
+out = open("preamble.py", "w")
 
 for line in s:
-    if line.startswith("/***"):
+    if line.startswith("# SNIP"):
         out.close()
-        if line.find("acttab") != -1:
-            filename = "acttab.c"
-        else:
-            m = regexp.match(line)
-            filename = m.group(1)
-        out = open(filename, "w")
+        m = regexp.match(line)
+        filename = m.group(1)
+        out = open("lemonade/" + filename, "w")
     else:
         out.write(line)
 
