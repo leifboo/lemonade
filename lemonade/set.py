@@ -1,34 +1,44 @@
+'''
+Set manipulation routines for the LEMON parser generator.
+'''
 
 size = 0
+
+
 def SetSize(n):
+    '''Set the set size.'''
+    global size
     size = n + 1
+    return
+
 
 def SetNew():
-    s = calloc(size, 1)
-    if s == 0:
-        memory_error()
+    '''Allocate a new set.'''
+    return [False for i in range(size)]
 
-    return s
-
-def SetFree(s):
-    free(s)
 
 def SetAdd(s, e):
-    _assert((e >= 0) and (e < size))
+    '''Add a new element to the set.  Return True if the element was
+    added and False if it was already there.
+    '''
     rv = s[e]
-    s[e] = 1
+    s[e] = True
     return not rv
 
+
 def SetUnion(s1, s2):
-    progress = 0
-    for (i = 0; i < size; i++):
-        if s2[i] == 0:
+    '''Add every element of s2 to s1.  Return True if s1 changes.'''
+    progress = False
+    for i in range(size):
+        if not s2[i]:
             continue
-
-        if s1[i] == 0:
-            progress = 1
-            s1[i] = 1
-
-
+        if not s1[i]:
+            progress = True
+            s1[i] = True
     return progress
+
+
+def SetFind(X, Y):
+    '''True if Y is in set X.'''
+    return X[Y]
 

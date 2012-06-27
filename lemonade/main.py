@@ -1,39 +1,50 @@
+'''
+Main program file for the LEMON parser generator.
+'''
 
-def memory_error():
-    fprintf(stderr, "Out of memory.  Aborting...\n")
-    exit(1)
 
-nDefine = 0
-azDefine = 0
+from option import *
+from ccruft import printf
+from sys import stderr, exit
+
+
+azDefine = []  # Names of the -D macros
+
+
+# This routine is called with the argument to each -D command-line option.
+# Add the macro defined to the azDefine array.
+
 def handle_D_option(z):
-    nDefine += 1
-    azDefine = realloc(azDefine, (sizeof(azDefine[0])) * nDefine)
-    if azDefine == 0:
-        fprintf(stderr, "out of memory\n")
-        exit(1)
+    eq = z.find('=')
+    if eq != -1:
+        z = z[:eq]
+    azDefine.append(z)
+    return
 
-    paz = &azDefine[nDefine - 1]
-    paz[00] = malloc(strlen(z) + 1)
-    if (paz[00]) == 0:
-        fprintf(stderr, "out of memory\n")
-        exit(1)
 
-    strcpy(paz[00], z)
-    for (z = paz[00]; (z[00]) and ((z[00]) != '='); z++):
-        pass
+def main(argv):
+    '''The main program.  Parse the command line and do it...'''
 
-    z[00] = 0
+    version = False
+    rpflag = False
+    basisflag = False
+    compress = False
+    quiet = False
+    statistics = False
+    mhflag = False
 
-def main(argc, argv):
-    version = 0
-    rpflag = 0
-    basisflag = 0
-    compress = 0
-    quiet = 0
-    statistics = 0
-    mhflag = 0
-    options = XXXstructInitXXX([OPT_FLAG, "b", &basisflag, "Print only the basis in report."], [OPT_FLAG, "c", &compress, "Don't compress the action table."], [OPT_FSTR, "D", handle_D_option, "Define an %ifdef macro."], [OPT_FLAG, "g", &rpflag, "Print grammar without actions."], [OPT_FLAG, "m", &mhflag, "Output a makeheaders compatible file"], [OPT_FLAG, "q", &quiet, "(Quiet) Don't print the report file."], [OPT_FLAG, "s", &statistics, "Print parser stats to standard output."], [OPT_FLAG, "x", &version, "Print the version number."], [OPT_FLAG, 0, 0, 0])
-    OptInit(argv, options, stderr)
+    options = (
+        s_options(OPT_FLAG, "b", 'basisflag', "Print only the basis in report."),
+        s_options(OPT_FLAG, "c", 'compress', "Don't compress the action table."),
+        s_options(OPT_FSTR, "D", handle_D_option, "Define an %ifdef macro."),
+        s_options(OPT_FLAG, "g", 'rpflag', "Print grammar without actions."),
+        s_options(OPT_FLAG, "m", 'mhflag', "Output a makeheaders compatible file"),
+        s_options(OPT_FLAG, "q", 'quiet', "(Quiet) Don't print the report file."),
+        s_options(OPT_FLAG, "s", 'statistics', "Print parser stats to standard output."),
+        s_options(OPT_FLAG, "x", 'version', "Print the version number."),
+        )
+
+    OptInit(argv, options, locals(), stderr)
     if version:
         printf("Lemon version 1.0\n")
         exit(0)
@@ -42,8 +53,10 @@ def main(argc, argv):
         fprintf(stderr, "Exactly one filename argument is required.\n")
         exit(1)
 
-    memset(&lem, 0, sizeof(lem))
+    lem = lemon()
     lem.errorcnt = 0
+
+    # Initialize the machine
     Strsafe_init()
     Symbol_init()
     State_init()
@@ -53,55 +66,86 @@ def main(argc, argv):
     Symbol_new("$")
     lem.errsym = Symbol_new("error")
     lem.errsym.useCnt = 0
-    Parse(&lem)
+
+    # Parse the input file
+    Parse(lem)
     if lem.errorcnt:
         exit(lem.errorcnt)
-
     if lem.nrule == 0:
         fprintf(stderr, "Empty grammar.\n")
         exit(1)
 
+    # Count and index the symbols of the grammar
     lem.nsymbol = Symbol_count()
     Symbol_new("{default}")
     lem.symbols = Symbol_arrayof()
-    for (i = 0; i <= lem.nsymbol; i++):
+    for i in range(lem.nsymbol + 1):
         lem.symbols[i].index = i
-
-    qsort(lem.symbols, lem.nsymbol + 1, sizeof(), Symbolcmpp)
-    for (i = 0; i <= lem.nsymbol; i++):
+    lem.symbols.sort(cmp=Symbolcmpp)
+    for i in range(lem.nsymbol + 1):
         lem.symbols[i].index = i
-
-    for (i = 1; (__ctype_b_loc()[00])[lem.symbols[i].name[0]] & (_ISupper); i++):
-        pass
-
+    i = 1
+    while lem.symbols[i].name[0].isupper():
+        i += 1
     lem.nterminal = i
+
+    # Generate a reprint of the grammar, if requested on the command line
     if rpflag:
-        Reprint(&lem)
+        Reprint(lem)
     else:
+        # Initialize the size for all follow and first sets
         SetSize(lem.nterminal + 1)
-        FindRulePrecedences(&lem)
-        FindFirstSets(&lem)
+
+        # Find the precedence for every production rule (that has one)
+        FindRulePrecedences(lem)
+
+        # Compute the lambda-nonterminals and the first-sets for every
+        # nonterminal
+        FindFirstSets(lem)
+
+        # Compute all LR(0) states.  Also record follow-set
+        # propagation links so that the follow-set can be computed
+        # later
         lem.nstate = 0
-        FindStates(&lem)
+        FindStates(lem)
         lem.sorted = State_arrayof()
-        FindLinks(&lem)
-        FindFollowSets(&lem)
-        FindActions(&lem)
+
+        # Tie up loose ends on the propagation links
+        FindLinks(lem)
+
+        # Compute the follow set of every reducible configuration
+        FindFollowSets(lem)
+
+        # Compute the action tables
+        FindActions(lem)
+
+        # Compress the action tables
         if compress == 0:
-            CompressTables(&lem)
+            CompressTables(lem)
 
-        ResortStates(&lem)
+        # Reorder and renumber the states so that states with fewer
+        # choices occur at the end.
+        ResortStates(lem)
+
+        # Generate a report of the parser generated.  (the "y.output" file)
         if not quiet:
-            ReportOutput(&lem)
+            ReportOutput(lem)
 
-        ReportTable(&lem, mhflag)
+        # Generate the source code for the parser
+        ReportTable(lem, mhflag)
+
+        # Produce a header file for use by the scanner.  (This step is
+        # omitted if the "-m" option is used because makeheaders will
+        # generate the file for us.)
         if not mhflag:
-            ReportHeader(&lem)
+            ReportHeader(lem)
 
 
     if statistics:
-        printf("Parser statistics: %d terminals, %d nonterminals, %d rules\n", lem.nterminal, lem.nsymbol - lem.nterminal, lem.nrule)
-        printf("                   %d states, %d parser table entries, %d conflicts\n", lem.nstate, lem.tablesize, lem.nconflict)
+        printf("Parser statistics: %d terminals, %d nonterminals, %d rules\n",
+               lem.nterminal, lem.nsymbol - lem.nterminal, lem.nrule)
+        printf("                   %d states, %d parser table entries, %d conflicts\n",
+               lem.nstate, lem.tablesize, lem.nconflict)
 
     if lem.nconflict:
         fprintf(stderr, "%d parsing conflicts.\n", lem.nconflict)

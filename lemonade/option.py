@@ -1,278 +1,275 @@
 
+
+from ccruft import fprintf, struct
+
+
+(
+    OPT_FLAG,  OPT_INT,  OPT_DBL,  OPT_STR,
+    OPT_FFLAG, OPT_FINT, OPT_FDBL, OPT_FSTR
+    ) = range(1, 9)
+
+s_options = struct(
+    's_options',
+    (
+        'type',
+        'label',
+        'arg',
+        'message',
+        )
+    )
+
+
 argv = None
 op = None
 errstream = None
+
+
+def ISOPT(X):
+    if len(X) == 0:
+        return False
+    return X[0] == '-' or X[0] == '+' or X.find('=') != -1
+
+
 def errline(n, k, err):
+    ''' Print the command line with a carrot pointing to the k-th character
+    of the n-th field.'''
+
     if argv[0]:
         fprintf(err, "%s", argv[0])
 
-    spcnt = strlen(argv[0]) + 1
-    for (i = 1; (i < n) and argv[i]; i++):
+    spcnt = len(argv[0]) + 1
+    i = 1
+    while i < n and argv[i]:
         fprintf(err, " %s", argv[i])
-        spcnt += strlen(argv[i]) + 1
+        spcnt += len(argv[i]) + 1
+        i += 1
 
     spcnt += k
-    for (; argv[i]; i++):
+    while argv[i]:
         fprintf(err, " %s", argv[i])
+        i += 1
 
     if spcnt < 20:
         fprintf(err, "\n%*s^-- here\n", spcnt, "")
     else:
         fprintf(err, "\n%*shere --^\n", spcnt - 7, "")
 
+    return
+
 
 def argindex(n):
-    dashdash = 0
-    if (argv != 0) and ((argv[00]) != 0):
-        for (i = 1; argv[i]; i++):
-            if dashdash or (not (((argv[i][0] == '-') or (argv[i][0] == '+')) or (strchr(argv[i], '=') != 0))):
+    '''Return the index of the N-th non-switch argument.  Return -1
+    if N is out of range.'''
+
+    dashdash = False
+    if argv and argv[0]:
+        i = 1
+        while argv[i]:
+            if dashdash or not ISOPT(argv[i]):
                 if n == 0:
                     return i
-
                 n -= 1
-
-            if strcmp(argv[i], "--") == 0:
-                dashdash = 1
-
-
+            if argv[i] == "--":
+                dashdash = True
+            i += 1
 
     return -1
 
+
 emsg = "Command line syntax error: "
-def handleflags(i, err):
+
+def handleflags(i, flags, err):
+    '''Process a flag command line argument.'''
+
     errcnt = 0
-    for (j = 0; op[j].label; j++):
-        if strncmp(&argv[i][1], op[j].label, strlen(op[j].label)) == 0:
+    for o in op:
+        if argv[i][1:].startswith(o.label):
             break
-
-
-    v = 1 if argv[i][0] == '-' else 0
-    if op[j].label == 0:
+    else:
         if err:
             fprintf(err, "%sundefined option.\n", emsg)
             errline(i, 1, err)
-
         errcnt += 1
-    elif op[j].type == OPT_FLAG:
-        (op[j].arg)[00] = v
-    elif op[j].type == OPT_FFLAG:
-        ((op[j].arg)[00])(v)
-    elif op[j].type == OPT_FSTR:
-        ((op[j].arg)[00])(&argv[i][2])
+        return errcnt
+
+    v = (argv[i][0] == '-')
+    if o.type == OPT_FLAG:
+        flags[o.arg] = v
+    elif o.type == OPT_FFLAG:
+        o.arg(v)
+    elif o.type == OPT_FSTR:
+        o.arg(argv[i][2:])
     else:
         if err:
             fprintf(err, "%smissing argument on switch.\n", emsg)
             errline(i, 1, err)
-
         errcnt += 1
 
     return errcnt
 
-def handleswitch(i, err):
+
+def handleswitch(i, flags, err):
+    '''Process a command line switch which has an argument.'''
+
     lv = 0
     dv = 0.0
     sv = 0
     errcnt = 0
-    cp = strchr(argv[i], '=')
-    _assert(cp != 0)
-    cp[00] = 0
-    for (j = 0; op[j].label; j++):
-        if strcmp(argv[i], op[j].label) == 0:
+
+    cp = argv[i].find('=')
+    assert cp != -1
+    lhs = argv[i][:cp]
+    rhs = argv[i][cp+1:]
+    for o in op:
+        if lhs == o.label:
             break
-
-
-    cp[00] = '='
-    if op[j].label == 0:
+    else:
         if err:
             fprintf(err, "%sundefined option.\n", emsg)
             errline(i, 0, err)
-
         errcnt += 1
-    else:
-        cp += 1
-        @switch op[j].type:
-        @case OPT_FLAG:
+        return errcnt
 
-        @case OPT_FFLAG:
+    if o.type in (OPT_FLAG, OPT_FFLAG):
+        if err:
+            fprintf(err, "%soption requires an argument.\n", emsg)
+            errline(i, 0, err)
+        errcnt += 1
+
+    elif o.type in (OPT_DBL, OPT_FDBL):
+        try:
+            dv = float(rhs)
+        except ValueError:
             if err:
-                fprintf(err, "%soption requires an argument.\n", emsg)
-                errline(i, 0, err)
-
+                fprintf(err, "%sillegal character in floating-point argument.\n", emsg)
+                errline(i, (end) - (argv[i]), err)
             errcnt += 1
-            break
 
-        @case OPT_DBL:
+    elif o.type in (OPT_INT, OPT_FINT):
+        try:
+            lv = int(rhs)
+        except ValueError:
+            if err:
+                fprintf(err, "%sillegal character in integer argument.\n", emsg)
+                errline(i, (end) - (argv[i]), err)
+            errcnt += 1
 
-        @case OPT_FDBL:
-            dv = strtod(cp, &end)
-            if end[00]:
-                if err:
-                    fprintf(err, "%sillegal character in floating-point argument.\n", emsg)
-                    errline(i, (end) - (argv[i]), err)
-
-                errcnt += 1
-
-            break
-
-        @case OPT_INT:
-
-        @case OPT_FINT:
-            lv = strtol(cp, &end, 0)
-            if end[00]:
-                if err:
-                    fprintf(err, "%sillegal character in integer argument.\n", emsg)
-                    errline(i, (end) - (argv[i]), err)
-
-                errcnt += 1
-
-            break
-
-        @case OPT_STR:
-
-        @case OPT_FSTR:
-            sv = cp
-            break
+    elif o.type in (OPT_STR, OPT_FSTR):
+        sv = rhs
 
 
-        @switch op[j].type:
-        @case OPT_FLAG:
+    if o.type in (OPT_FLAG, OPT_FFLAG):
+        pass
 
-        @case OPT_FFLAG:
-            break
+    elif o.type == OPT_DBL:
+        flags[o.arg] = dv
 
-        @case OPT_DBL:
-            (op[j].arg)[00] = dv
-            break
+    elif o.type == OPT_FDBL:
+        o.arg(dv)
 
-        @case OPT_FDBL:
-            ((op[j].arg)[00])(dv)
-            break
+    elif o.type == OPT_INT:
+        flags[o.arg] = lv
 
-        @case OPT_INT:
-            (op[j].arg)[00] = lv
-            break
+    elif o.type == OPT_FINT:
+        o.arg(lv)
 
-        @case OPT_FINT:
-            ((op[j].arg)[00])(lv)
-            break
+    elif o.type == OPT_STR:
+        flags[o.arg] = sv
 
-        @case OPT_STR:
-            (op[j].arg)[00] = sv
-            break
-
-        @case OPT_FSTR:
-            ((op[j].arg)[00])(sv)
-            break
-
-
+    elif o.type == OPT_FSTR:
+        o.arg(sv)
 
     return errcnt
 
-def OptInit(a, o, err):
+
+def OptInit(a, o, flags, err):
+    global argv, op, errstream
+    from sys import exit
+
     errcnt = 0
     argv = a
     op = o
     errstream = err
-    if (argv and (argv[00])) and op:
-        for (i = 1; argv[i]; i++):
-            if (argv[i][0] == '+') or (argv[i][0] == '-'):
-                errcnt += handleflags(i, err)
-            elif strchr(argv[i], '='):
-                errcnt += handleswitch(i, err)
 
-
+    if argv and argv[0] and op:
+        i = 1
+        while argv[i]:
+            if argv[i][0] == '+' or argv[i][0] == '-':
+                errcnt += handleflags(i, flags, err)
+            elif argv[i].find('=') != -1:
+                errcnt += handleswitch(i, flags, err)
+            i += 1
 
     if errcnt > 0:
-        fprintf(err, "Valid command line options for \"%s\" are:\n", a[00])
+        fprintf(err, 'Valid command line options for "%s" are:\n', a[0])
         OptPrint()
         exit(1)
 
     return 0
 
+
 def OptNArgs():
     cnt = 0
-    dashdash = 0
-    if (argv != 0) and (argv[0] != 0):
-        for (i = 1; argv[i]; i++):
-            if dashdash or (not (((argv[i][0] == '-') or (argv[i][0] == '+')) or (strchr(argv[i], '=') != 0))):
+    dashdash = False
+    if argv and argv[0]:
+        for arg in argv[1:]:
+            if dashdash or not ISOPT(arg):
                 cnt += 1
-
-            if strcmp(argv[i], "--") == 0:
-                dashdash = 1
-
-
-
+            if arg == "--":
+                dashdash = True
     return cnt
+
 
 def OptArg(n):
     i = argindex(n)
-    return argv[i] if i >= 0 else 0
+    return argv[i] if i >= 0 else None
+
 
 def OptErr(n):
     i = argindex(n)
     if i >= 0:
         errline(i, 0, errstream)
+    return
 
 
 def OptPrint():
     max = 0
-    for (i = 0; op[i].label; i++):
-        len = strlen(op[i].label) + 1
-        @switch op[i].type:
-        @case OPT_FLAG:
 
-        @case OPT_FFLAG:
-            break
+    for o in op:
+        len = len(o.label) + 1
 
-        @case OPT_INT:
+        if o.type in (OPT_FLAG, OPT_FFLAG):
+            pass
 
-        @case OPT_FINT:
-            len += 9
-            break
+        elif o.type in (OPT_INT, OPT_FINT):
+            len += len("<integer>")
 
-        @case OPT_DBL:
+        elif o.type in (OPT_DBL, OPT_FDBL):
+            len += len("<real>")
 
-        @case OPT_FDBL:
-            len += 6
-            break
-
-        @case OPT_STR:
-
-        @case OPT_FSTR:
-            len += 8
-            break
-
+        elif o.type in (OPT_STR, OPT_FSTR):
+            len += len("<string>")
 
         if len > max:
             max = len
 
 
-    for (i = 0; op[i].label; i++):
-        @switch op[i].type:
-        @case OPT_FLAG:
+    for o in op:
+        if o.type in (OPT_FLAG, OPT_FFLAG):
+            fprintf(errstream, "  -%-*s  %s\n",
+                    max, o.label, o.message)
 
-        @case OPT_FFLAG:
-            fprintf(errstream, "  -%-*s  %s\n", max, op[i].label, op[i].message)
-            break
+        elif o.type in (OPT_INT, OPT_FINT):
+            fprintf(errstream, "  %s=<integer>%*s  %s\n",
+                    o.label, (max - strlen(o.label)) - 9, "", o.message)
 
-        @case OPT_INT:
+        elif o.type in (OPT_DBL, OPT_FDBL):
+            fprintf(errstream, "  %s=<real>%*s  %s\n",
+                    o.label, (max - strlen(o.label)) - 6, "", o.message)
 
-        @case OPT_FINT:
-            fprintf(errstream, "  %s=<integer>%*s  %s\n", op[i].label, (max - strlen(op[i].label)) - 9, "", op[i].message)
-            break
+        elif o.type in (OPT_STR, OPT_FSTR):
+            fprintf(errstream, "  %s=<string>%*s  %s\n",
+                    o.label, (max - strlen(o.label)) - 8, "", o.message)
 
-        @case OPT_DBL:
-
-        @case OPT_FDBL:
-            fprintf(errstream, "  %s=<real>%*s  %s\n", op[i].label, (max - strlen(op[i].label)) - 6, "", op[i].message)
-            break
-
-        @case OPT_STR:
-
-        @case OPT_FSTR:
-            fprintf(errstream, "  %s=<string>%*s  %s\n", op[i].label, (max - strlen(op[i].label)) - 8, "", op[i].message)
-            break
-
-
-
+    return
 

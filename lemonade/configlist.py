@@ -1,161 +1,189 @@
+'''
+Routines to processing a configuration list and building a state in
+the LEMON parser generator.
+'''
 
-freelist = 0
-current = 0
-currentend = 0
-basis = 0
-basisend = 0
-def newconfig():
-    if freelist == 0:
-        amt = 3
-        freelist = calloc(amt, sizeof())
-        if freelist == 0:
-            fprintf(stderr, "Unable to allocate memory for a new configuration.")
-            exit(1)
 
-        for (i = 0; i < (amt - 1); i++):
-            freelist[i].next = &freelist[i + 1]
+from ccruft import iterlinks
+from struct import *
 
-        freelist[amt - 1].next = 0
 
-    new = freelist
-    freelist = freelist.next
-    return new
+current = None      # Top of list of configurations
+currentend = None   # Last on list of configs
+basis = None        # Top of list of basis configs
+basisend = None     # End of list of basis configs
 
-def deleteconfig(old):
-    old.next = freelist
-    freelist = old
+
+def config_model(rp, dot):
+    return config(
+        rp = rp,
+        dot = dot,
+        fws = None,
+        stp = None,
+        fplp = None,
+        bplp = None,
+        next = None,
+        bp = None,
+        )
+
 
 def Configlist_init():
-    current = 0
-    currentend = &current
-    basis = 0
-    basisend = &basis
+    '''Initialize the configuration list builder.'''
+    global current, currentend
+    global basis, basisend
+    current = currentend = None
+    basis = basisend = None
     Configtable_init()
     return
 
+
 def Configlist_reset():
-    current = 0
-    currentend = &current
-    basis = 0
-    basisend = &basis
-    Configtable_clear(0)
+    '''Initialize the configuration list builder.'''
+    global current, currentend
+    global basis, basisend
+    current = currentend = None
+    basis = basisend = None
+    Configtable_clear()
     return
 
-def Configlist_add(rp, dot):
-    _assert(currentend != 0)
-    model.rp = rp
-    model.dot = dot
-    cfp = Configtable_find(&model)
-    if cfp == 0:
-        cfp = newconfig()
-        cfp.rp = rp
-        cfp.dot = dot
-        cfp.fws = SetNew()
-        cfp.stp = 0
-        cfp.fplp = (cfp.bplp = 0)
-        cfp.next = 0
-        cfp.bp = 0
-        currentend[00] = cfp
-        currentend = &cfp.next
-        Configtable_insert(cfp)
 
+def Configlist_add(rp, dot):
+    '''Add another configuration to the configuration list.
+
+    rp:   The rule
+    dot:  Index into the RHS of the rule where the dot goes
+    '''
+
+    global current, currentend
+
+    model = config_model(rp, dot)
+    cfp = Configtable_find(model)
+    if cfp is None:
+        cfp = config(
+            rp = rp,
+            dot = dot,
+            fws = SetNew(),
+            stp = None,
+            fplp = None,
+            bplp = None,
+            next = None,
+            bp = None,
+            )
+
+        if currentend:
+            currentend.next = cfp
+        else:
+            current = cfp
+        currentend = cfp
+
+        Configtable_insert(cfp)
     return cfp
+
 
 def Configlist_addbasis(rp, dot):
-    _assert(basisend != 0)
-    _assert(currentend != 0)
-    model.rp = rp
-    model.dot = dot
-    cfp = Configtable_find(&model)
-    if cfp == 0:
-        cfp = newconfig()
-        cfp.rp = rp
-        cfp.dot = dot
-        cfp.fws = SetNew()
-        cfp.stp = 0
-        cfp.fplp = (cfp.bplp = 0)
-        cfp.next = 0
-        cfp.bp = 0
-        currentend[00] = cfp
-        currentend = &cfp.next
-        basisend[00] = cfp
-        basisend = &cfp.bp
+    '''Add a basis configuration to the configuration list.'''
+
+    global current, currentend
+    global basis, basisend
+
+    model = config_model(rp, dot)
+    cfp = Configtable_find(model)
+    if cfp is None:
+        cfp = config(
+            rp = rp,
+            dot = dot,
+            fws = SetNew(),
+            stp = None,
+            fplp = None,
+            bplp = None,
+            next = None,
+            bp = None,
+            )
+
+        if currentend:
+            currentend.next = cfp
+        else:
+            current = cfp
+        currentend = cfp
+
+        if basisend:
+            basisend.bp = cfp
+        else:
+            basis = cfp
+        basisend = cfp
+
         Configtable_insert(cfp)
 
     return cfp
 
+
 def Configlist_closure(lemp):
-    _assert(currentend != 0)
-    for (cfp = current; cfp; cfp = cfp.next):
+    '''Compute the closure of the configuration list.'''
+
+    for cfp in iterlinks(current):
         rp = cfp.rp
         dot = cfp.dot
         if dot >= rp.nrhs:
             continue
-
         sp = rp.rhs[dot]
         if sp.type == NONTERMINAL:
-            if (sp.rule == 0) and (sp != lemp.errsym):
-                ErrorMsg(lemp.filename, rp.line, "Nonterminal \"%s\" has no rules.", sp.name)
+            if sp.rule is None and sp != lemp.errsym:
+                ErrorMsg(lemp.filename, rp.line,
+                         'Nonterminal "%s" has no rules.',
+                         sp.name)
                 lemp.errorcnt += 1
-
-            for (newrp = sp.rule; newrp; newrp = newrp.nextlhs):
+            for newrp in iterlinks(sp.rule, 'nextlhs'):
                 newcfp = Configlist_add(newrp, 0)
-                for (i = dot + 1; i < rp.nrhs; i++):
+                for i in range(dot + 1, rp.nrhs):
                     xsp = rp.rhs[i]
                     if xsp.type == TERMINAL:
                         SetAdd(newcfp.fws, xsp.index)
                         break
                     elif xsp.type == MULTITERMINAL:
-                        for (k = 0; k < xsp.nsubsym; k++):
+                        for k in range(xsp.nsubsym):
                             SetAdd(newcfp.fws, xsp.subsym[k].index)
-
                         break
                     else:
                         SetUnion(newcfp.fws, xsp.firstset)
-                        if xsp._lambda == False:
+                        if not xsp._lambda:
                             break
-
-
-
                 if i == rp.nrhs:
-                    Plink_add(&cfp.fplp, newcfp)
-
-
-
-
+                    cfp.fpl = Plink_add(cfp.fplp, newcfp)
     return
+
 
 def Configlist_sort():
-    current = msort(current, &current.next, Configcmp)
-    currentend = 0
+    '''Sort the configuration list.'''
+    global current, currentend
+    current = msort(current, 'next', Configcmp)
+    currentend = None
     return
+
 
 def Configlist_sortbasis():
-    basis = msort(current, &current.bp, Configcmp)
-    basisend = 0
+    '''Sort the basis configuration list.'''
+    global basis, basisend
+    basis = msort(current, 'bp', Configcmp)
+    basisend = None
     return
+
 
 def Configlist_return():
+    '''Return a pointer to the head of the configuration list and
+    reset the list.
+    '''
+    global current, currentend
     old = current
-    current = 0
-    currentend = 0
+    current = None
+    currentend = None
     return old
+
 
 def Configlist_basis():
+    '''Return a pointer to the head of the configuration list and
+    reset the list.'''
+    global basis, basisend
     old = basis
-    basis = 0
-    basisend = 0
+    basis = None
+    basisend = None
     return old
-
-def Configlist_eat(cfp):
-    for (; cfp; cfp = nextcfp):
-        nextcfp = cfp.next
-        _assert(cfp.fplp == 0)
-        _assert(cfp.bplp == 0)
-        if cfp.fws:
-            SetFree(cfp.fws)
-
-        deleteconfig(cfp)
-
-    return
-
