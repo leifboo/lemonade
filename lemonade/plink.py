@@ -3,12 +3,10 @@ Routines processing configuration follow-set propagation links in the
 LEMON parser generator.
 '''
 
-from ccruft import struct
-from struct import *
-
 
 def Plink_add(plpp, cfp):
     '''Add a plink to a plink list.'''
+    from struct import plink
     new = plink(
         next = plpp,
         cfp = cfp

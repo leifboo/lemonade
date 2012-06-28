@@ -2,8 +2,12 @@
 Main program file for the LEMON parser generator.
 '''
 
-
+from build import *
 from option import *
+from parse import *
+from report import *
+from struct import *
+
 from ccruft import printf
 from sys import stderr, exit
 
@@ -53,11 +57,36 @@ def main(argv):
         fprintf(stderr, "Exactly one filename argument is required.\n")
         exit(1)
 
-    lem = lemon()
-    lem.errorcnt = 0
+    lem = lemon(
+        None,
+        None,
+        0, 0, 0, 0,
+        None,
+        0, # errorcnt
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        0, 0, 0, 0,
+        None,
+        )
 
     # Initialize the machine
-    Strsafe_init()
     Symbol_init()
     State_init()
     lem.argv0 = argv[0]

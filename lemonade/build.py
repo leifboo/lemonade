@@ -5,6 +5,14 @@ generator.
 
 from ccruft import iterlinks
 
+from action import *
+from configlist import *
+from error import *
+from plink import *
+from set import *
+from struct import *
+from table import *
+
 
 
 def FindRulePrecedences(xp):
@@ -80,11 +88,11 @@ def FindFirstSets(lemp):
                         progress += SetAdd(s1.firstset, s2.subsym[j].index)
                     break
                 elif s1 == s2:
-                    if s1._lambda == False:
+                    if not s1._lambda:
                         break
                 else:
                     progress += SetUnion(s1.firstset, s2.firstset)
-                    if s2._lambda == False:
+                    if not s2._lambda:
                         break
     return
 
@@ -164,8 +172,7 @@ def getstate(lemp):
             x = x.bp
             y = y.bp
 
-        cfp = Configlist_return()
-        Configlist_eat(cfp)
+        Configlist_return()
 
     else:
         # This really is a new state.  Construct all the details.
@@ -348,7 +355,7 @@ def FindActions(lemp):
             while nap and nap.sp == ap.sp:
                 # The two actions "ap" and "nap" have the same
                 # lookahead.  Figure out which one should be used.
-                lemp.nconflict += resolve_conflict(ap, nap, lemp.errsym)
+                lemp.nconflict += resolve_conflict(ap, nap)
                 nap = nap.next
             ap = ap.next
 
@@ -368,11 +375,9 @@ def FindActions(lemp):
     return
 
 
-def resolve_conflict(apx, apy, errsym):
+def resolve_conflict(apx, apy):
     """Resolve a conflict between the two given actions.  If the
     conflict can't be resolved, return non-zero.
-
-    errsym: The error symbol (if defined.  None otherwise)
     """
 
     # NO LONGER TRUE:

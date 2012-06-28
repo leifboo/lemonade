@@ -2,6 +2,8 @@
 Routines processing parser actions in the LEMON parser generator.
 '''
 
+from struct import *
+
 
 def actioncmp(ap1, ap2):
     '''Compare two actions for sorting purposes.  Return negative,
@@ -18,16 +20,21 @@ def actioncmp(ap1, ap2):
 
 def Action_sort(ap):
     '''Sort parser actions.'''
+    from msort import msort
     ap = msort(ap, 'next', actioncmp)
     return ap
 
 
 def Action_add(app, type, sp, arg):
-    new = Action()
-    new.next = app
+    new = action(
+        next = app,
+        type = type,
+        sp = sp,
+        collide = None,
+        stp = None,
+        rp = None,
+        )
     app = new
-    new.type = type
-    new.sp = sp
     if type == SHIFT:
         new.x.stp = arg
     else:

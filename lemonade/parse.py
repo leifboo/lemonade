@@ -2,7 +2,11 @@
 Input file parser for the LEMON parser generator.
 '''
 
-from ccruft import struct, strcmp, fprintf
+from ccruft import *
+from error import *
+from struct import *
+from table import *
+
 from sys import exit
 
 
@@ -475,6 +479,8 @@ def parseonetoken(psp, x):
 # out as appropriate.
 
 def preprocess_input(z):
+    from main import azDefine
+    from sys import stderr
 
     exclude = 0
     start = 0
@@ -513,7 +519,7 @@ def preprocess_input(z):
                 while j+n < len(z) and z[j+n] and not z[j+n].isspace():
                     n += 1
                 exclude = 1
-                for k in range(nDefine):
+                for k in range(len(azDefine)):
                     if azDefine[k] == z[j:j+n]:
                         exclude = 0
                         break
@@ -556,8 +562,8 @@ def Parse(gp):
         lhs = None,
         lhsalias = None,
         nrhs = 0,
-        rhs = [None for i in range(MAXRHS)],
-        alias = [None for i in range(MAXRHS)],
+        rhs = [None] * MAXRHS,
+        alias = [None] * MAXRHS,
         prevrule = None,
         declkeyword = None,
         declargslot = None,

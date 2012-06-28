@@ -86,7 +86,7 @@ def merge(a, b, cmp, next):
 LISTSIZE = 30
 
 def msort(list, next, cmp):
-    set = [None for i in range(LISTSIZE)]
+    set = [None] * LISTSIZE
 
     while list:
         ep = list
@@ -94,7 +94,7 @@ def msort(list, next, cmp):
         setattr(ep, next, None)
         i = 0
         while i < LISTSIZE - 1 and set[i]:
-            ep = merge(ep, set[i], cmp, offset)
+            ep = merge(ep, set[i], cmp, next)
             set[i] = None
             i += 1
         set[i] = ep
@@ -102,7 +102,7 @@ def msort(list, next, cmp):
     ep = None
     for i in range(LISTSIZE):
         if set[i]:
-            ep = merge(ep, set[i], cmp, offset)
+            ep = merge(ep, set[i], cmp, next)
 
     return ep
 

@@ -38,7 +38,7 @@ def strcmp(a,b):
 from keyword import iskeyword as _iskeyword
 import sys as _sys
 
-def struct(typename, field_names, verbose=False, rename=False):
+def struct(typename, field_names, verbose=False):
     """Returns a new class with named fields.
 
     >>> Point = struct('Point', 'x y')
@@ -62,16 +62,6 @@ def struct(typename, field_names, verbose=False, rename=False):
     if isinstance(field_names, basestring):
         field_names = field_names.replace(',', ' ').split() # names separated by whitespace and/or commas
     field_names = tuple(map(str, field_names))
-    if rename:
-        names = list(field_names)
-        seen = set()
-        for i, name in enumerate(names):
-            if (not min(c.isalnum() or c=='_' for c in name) or _iskeyword(name)
-                or not name or name[0].isdigit() or name.startswith('_')
-                or name in seen):
-                    names[i] = '_%d' % i
-            seen.add(name)
-        field_names = tuple(names)
     for name in (typename,) + field_names:
         if not min(c.isalnum() or c=='_' for c in name):
             raise ValueError('Type names and field names can only contain alphanumeric characters and underscores: %r' % name)
@@ -81,14 +71,11 @@ def struct(typename, field_names, verbose=False, rename=False):
             raise ValueError('Type names and field names cannot start with a number: %r' % name)
     seen_names = set()
     for name in field_names:
-        if name.startswith('_') and not rename:
-            raise ValueError('Field names cannot start with an underscore: %r' % name)
         if name in seen_names:
             raise ValueError('Encountered duplicate field name: %r' % name)
         seen_names.add(name)
 
     # Create and fill-in the class template
-    numfields = len(field_names)
     argtxt = repr(field_names).replace("'", "")[1:-1]   # tuple repr without parens or quotes
     reprtxt = ', '.join('%s=%%r' % name for name in field_names)
     valuestxt = ', '.join('self.%s' % name for name in field_names)

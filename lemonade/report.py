@@ -2,7 +2,13 @@
 Procedures for generating reports and tables in the LEMON parser generator.
 '''
 
-from ccruft import printf, fprintf, strcmp, struct, iterlinks
+from action import *
+from acttab import *
+from ccruft import *
+from struct import *
+from table import *
+
+from sys import stderr
 
 
 def file_makename(lemp, suffix):
@@ -48,9 +54,9 @@ def Reprint(lemp):
     maxlen = 10
     for i in range(lemp.nsymbol):
         sp = lemp.symbols[i]
-        len = len(sp.name)
-        if len > maxlen:
-            maxlen = len
+        l = len(sp.name)
+        if l > maxlen:
+            maxlen = l
 
     ncolumns = 76 / (maxlen + 5)
     if ncolumns < 1:
@@ -139,6 +145,8 @@ def PrintAction(ap, fp, indent):
 def ReportOutput(lemp):
     '''Generate the "y.output" log file.'''
 
+    from set import SetFind
+
     fp = file_open(lemp, ".out", "wb")
     if fp is None:
         return
@@ -153,7 +161,7 @@ def ReportOutput(lemp):
 
         while cfp:
             if cfp.dot == cfp.rp.nrhs:
-                sprintf(buf, "(%d)", cfp.rp.index)
+                buf = "(%d)" % cfp.rp.index
                 fprintf(fp, "    %5s ", buf)
             else:
                 fprintf(fp, "          ")
@@ -251,7 +259,8 @@ def tplt_xfer(name, _in, out, lineno):
 def tplt_open(lemp):
     '''Find the template file and open it, returning a stream.'''
 
-    from os.path import basename, dirname, splitext, isfile
+    from os.path import dirname, splitext, isfile
+    import os
     
     templatename = "lempar.c"
     buf = splitext(lemp.filename)[0] + ".lt"
@@ -280,7 +289,7 @@ def tplt_open(lemp):
         return None
 
     try:
-        _in = fopen(tpltname, "rb")
+        _in = open(tpltname, "rb")
     except IOError:
         fprintf(stderr,
                 "Can't open the template file \"%s\".\n",
@@ -370,10 +379,12 @@ def translate_code(lemp, rp):
     stack.
     '''
 
+    from parse import MAXRHS
+    from error import ErrorMsg
     import re
     
-    lhsused = False                        # True if the LHS element has been used
-    used = [False for i in range(MAXRHS)]  # True for each RHS element which is used
+    lhsused = False          # True if the LHS element has been used
+    used = [False] * MAXRHS  # True for each RHS element which is used
 
     if rp.code is None:
         rp.code = "\n"
@@ -482,7 +493,7 @@ def print_stack_union(out, lemp, plineno, mhflag):
     # directive.
 
     arraysize = lemp.nsymbol * 2  # Size of the "types" array
-    types = [None for i in range(arraysize)] # A hash table of datatypes
+    types = [None] * arraysize # A hash table of datatypes
 
     for i in range(lemp.nsymbol):
 
@@ -755,7 +766,7 @@ def ReportTable(lemp, mhflag):
     # Compute the actions on all states and count them up
     #
 
-    ax = [None for i in range(lemp.nstate * 2)]
+    ax = [None] * (lemp.nstate * 2)
 
     for i in range(lemp.nstate):
         stp = lemp.sorted[i]
@@ -1023,7 +1034,7 @@ def ReportTable(lemp, mhflag):
     #
 
     for i in range(lemp.nsymbol):
-        sprintf(line, "\"%s\",", lemp.symbols[i].name)
+        line = "\"%s\"," % lemp.symbols[i].name
         fprintf(out, "  %-15s", line)
         
         if (i & 3) == 3:

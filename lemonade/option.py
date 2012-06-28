@@ -142,7 +142,7 @@ def handleswitch(i, flags, err):
         except ValueError:
             if err:
                 fprintf(err, "%sillegal character in floating-point argument.\n", emsg)
-                errline(i, (end) - (argv[i]), err)
+                errline(i, 0, err)
             errcnt += 1
 
     elif o.type in (OPT_INT, OPT_FINT):
@@ -151,7 +151,7 @@ def handleswitch(i, flags, err):
         except ValueError:
             if err:
                 fprintf(err, "%sillegal character in integer argument.\n", emsg)
-                errline(i, (end) - (argv[i]), err)
+                errline(i, 0, err)
             errcnt += 1
 
     elif o.type in (OPT_STR, OPT_FSTR):
@@ -236,22 +236,22 @@ def OptPrint():
     max = 0
 
     for o in op:
-        len = len(o.label) + 1
+        l = len(o.label) + 1
 
         if o.type in (OPT_FLAG, OPT_FFLAG):
             pass
 
         elif o.type in (OPT_INT, OPT_FINT):
-            len += len("<integer>")
+            l += len("<integer>")
 
         elif o.type in (OPT_DBL, OPT_FDBL):
-            len += len("<real>")
+            l += len("<real>")
 
         elif o.type in (OPT_STR, OPT_FSTR):
-            len += len("<string>")
+            l += len("<string>")
 
-        if len > max:
-            max = len
+        if l > max:
+            max = l
 
 
     for o in op:
@@ -261,15 +261,15 @@ def OptPrint():
 
         elif o.type in (OPT_INT, OPT_FINT):
             fprintf(errstream, "  %s=<integer>%*s  %s\n",
-                    o.label, (max - strlen(o.label)) - 9, "", o.message)
+                    o.label, (max - len(o.label)) - 9, "", o.message)
 
         elif o.type in (OPT_DBL, OPT_FDBL):
             fprintf(errstream, "  %s=<real>%*s  %s\n",
-                    o.label, (max - strlen(o.label)) - 6, "", o.message)
+                    o.label, (max - len(o.label)) - 6, "", o.message)
 
         elif o.type in (OPT_STR, OPT_FSTR):
             fprintf(errstream, "  %s=<string>%*s  %s\n",
-                    o.label, (max - strlen(o.label)) - 8, "", o.message)
+                    o.label, (max - len(o.label)) - 8, "", o.message)
 
     return
 

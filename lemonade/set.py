@@ -14,7 +14,7 @@ def SetSize(n):
 
 def SetNew():
     '''Allocate a new set.'''
-    return [False for i in range(size)]
+    return [False] * size
 
 
 def SetAdd(s, e):

@@ -26,26 +26,26 @@ from ccruft import struct
 symbol = struct(
     'symbol',
     (
-        'name'          # Name of the symbol
-        'index'         # Index number for this symbol
-        'type'          # Symbols are all either TERMINALS or NTs
-        'rule'          # Linked list of rules of this (if an NT)
-        'fallback'      # fallback token in case this token doesn't parse
-        'prec'          # Precedence if defined (-1 otherwise)
-        'assoc'         # Associativity if predecence is defined
-        'firstset'      # First-set for all rules of this symbol
-        '_lambda'       # True if NT and can generate an empty string
-        'useCnt'        # Number of times used
-        'destructor'    # Code which executes whenever this symbol is
+        'name',         # Name of the symbol
+        'index',        # Index number for this symbol
+        'type',         # Symbols are all either TERMINALS or NTs
+        'rule',         # Linked list of rules of this (if an NT)
+        'fallback',     # fallback token in case this token doesn't parse
+        'prec',         # Precedence if defined (-1 otherwise)
+        'assoc',        # Associativity if predecence is defined
+        'firstset',     # First-set for all rules of this symbol
+        '_lambda',      # True if NT and can generate an empty string
+        'useCnt',       # Number of times used
+        'destructor',   # Code which executes whenever this symbol is
                         # popped from the stack during error processing
-        'datatype'      # The data type of information held by this
+        'datatype',     # The data type of information held by this
                         # object. Only used if type==NONTERMINAL
-        'dtnum'         # The data type number.  In the parser, the value
+        'dtnum',        # The data type number.  In the parser, the value
                         # stack is a union.  The .yy%d element of this
                         # union is the correct data type for this object
         # The following fields are used by MULTITERMINALs only
-        'nsubsym'       # Number of constituent symbols in the MULTI
-        'subsym'        # Array of constituent symbols
+        'nsubsym',      # Number of constituent symbols in the MULTI
+        'subsym',       # Array of constituent symbols
         )
     )
 
@@ -96,7 +96,7 @@ configstruct = struct(
         'fplp',         # Follow-set forward propagation links
         'bplp',         # Follow-set backwards propagation links
         'stp',          # Pointer to state which contains this
-        'status'        # The status is used during followset and shift computations
+        'status',       # The status is used during followset and shift computations
         'next',         # Next configuration in the state
         'bp',           # The next basis configuration
         )

@@ -5,7 +5,10 @@ the LEMON parser generator.
 
 
 from ccruft import iterlinks
+from error import *
+from set import *
 from struct import *
+from table import *
 
 
 current = None      # Top of list of configurations
@@ -19,9 +22,10 @@ def config_model(rp, dot):
         rp = rp,
         dot = dot,
         fws = None,
-        stp = None,
         fplp = None,
         bplp = None,
+        stp = None,
+        status = 0,
         next = None,
         bp = None,
         )
@@ -63,9 +67,10 @@ def Configlist_add(rp, dot):
             rp = rp,
             dot = dot,
             fws = SetNew(),
-            stp = None,
             fplp = None,
             bplp = None,
+            stp = None,
+            status = 0,
             next = None,
             bp = None,
             )
@@ -93,9 +98,10 @@ def Configlist_addbasis(rp, dot):
             rp = rp,
             dot = dot,
             fws = SetNew(),
-            stp = None,
             fplp = None,
             bplp = None,
+            stp = None,
+            status = 0,
             next = None,
             bp = None,
             )
@@ -119,6 +125,8 @@ def Configlist_addbasis(rp, dot):
 
 def Configlist_closure(lemp):
     '''Compute the closure of the configuration list.'''
+
+    from plink import Plink_add
 
     for cfp in iterlinks(current):
         rp = cfp.rp
@@ -154,6 +162,7 @@ def Configlist_closure(lemp):
 
 def Configlist_sort():
     '''Sort the configuration list.'''
+    from msort import msort
     global current, currentend
     current = msort(current, 'next', Configcmp)
     currentend = None
@@ -162,6 +171,7 @@ def Configlist_sort():
 
 def Configlist_sortbasis():
     '''Sort the basis configuration list.'''
+    from msort import msort
     global basis, basisend
     basis = msort(current, 'bp', Configcmp)
     basisend = None
