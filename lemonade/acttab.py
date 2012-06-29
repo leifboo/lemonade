@@ -61,11 +61,9 @@ def acttab_alloc():
 def acttab_action(p, lookahead, _action):
     '''Add a new action to the current transaction set.'''
 
-    from itertools import repeat
-
     if p.nLookahead >= p.nLookaheadAlloc:
         p.nLookaheadAlloc += 25
-        p.aLookahead.extend(repeat(action(0,0), 25))
+        p.aLookahead.extend([action(0,0) for i in range(25)])
 
     if p.nLookahead == 0:
         p.mxLookahead = lookahead
@@ -95,8 +93,6 @@ def acttab_insert(p):
     Return the offset into the action table of the new transaction.
     '''
 
-    from itertools import repeat
-
     assert p.nLookahead > 0
 
     # Make sure we have enough space to hold the expanded action table
@@ -107,7 +103,7 @@ def acttab_insert(p):
     if p.nAction + n >= p.nActionAlloc:
         oldAlloc = p.nActionAlloc
         p.nActionAlloc = p.nAction + n + p.nActionAlloc + 20
-        p.aAction.extend(repeat(action(-1,-1), p.nActionAlloc - oldAlloc))
+        p.aAction.extend([action(-1,-1) for i in range(p.nActionAlloc - oldAlloc)])
 
 
     # Scan the existing action table looking for an offset where we
@@ -126,13 +122,12 @@ def acttab_insert(p):
                     break
                 if p.aAction[k].lookahead >= 0:
                     break
-            if j < p.nLookahead:
-                continue
-            for j in range(p.nAction):
-                if p.aAction[j].lookahead == j + p.mnLookahead - i:
-                    break
-            if j == p.nAction:
-                break # Fits in empty slots
+            else:
+                for j in range(p.nAction):
+                    if p.aAction[j].lookahead == j + p.mnLookahead - i:
+                        break
+                else:
+                    break # Fits in empty slots
 
         elif p.aAction[i].lookahead == p.mnLookahead:
             if p.aAction[i].action != p.mnAction:
@@ -145,21 +140,21 @@ def acttab_insert(p):
                     break
                 if p.aLookahead[j].action != p.aAction[k].action:
                     break
-            if j < p.nLookahead:
-                continue
-            n = 0
-            for j in range(p.nAction):
-                if p.aAction[j].lookahead < 0:
-                    continue
-                if p.aAction[j].lookahead == j + p.mnLookahead - i:
-                    n += 1
-            if n == p.nLookahead:
-                break # Same as a prior transaction set
+            else:
+                n = 0
+                for j in range(p.nAction):
+                    if p.aAction[j].lookahead < 0:
+                        continue
+                    if p.aAction[j].lookahead == j + p.mnLookahead - i:
+                        n += 1
+                if n == p.nLookahead:
+                    break # Same as a prior transaction set
 
     # Insert transaction set at index i.
     for j in range(p.nLookahead):
         k = p.aLookahead[j].lookahead - p.mnLookahead + i
-        p.aAction[k] = p.aLookahead[j]
+        p.aAction[k].lookahead = p.aLookahead[j].lookahead
+        p.aAction[k].action    = p.aLookahead[j].action
         if k >= p.nAction:
             p.nAction = k + 1
     p.nLookahead = 0

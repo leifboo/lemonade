@@ -68,7 +68,7 @@ def FindFirstSets(lemp):
                 sp = rp.rhs[i]
                 if sp.type != TERMINAL or not sp._lambda:
                     break
-            if i == rp.nrhs:
+            else:
                 rp.lhs._lambda = True
                 progress = 1
 

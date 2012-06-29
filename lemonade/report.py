@@ -799,12 +799,10 @@ def ReportTable(lemp, mhflag):
         if ax[i].isTkn:
             for ap in iterlinks(stp.ap):
                 if ap.sp.index >= lemp.nterminal:
-                    i += 1
                     continue
 
                 action = compute_action(lemp, ap)
                 if action < 0:
-                    i += 1
                     continue
 
                 acttab_action(pActtab, ap.sp.index, action)
@@ -819,16 +817,13 @@ def ReportTable(lemp, mhflag):
         else:
             for ap in iterlinks(stp.ap):
                 if ap.sp.index < lemp.nterminal:
-                    i += 1
                     continue
 
                 if ap.sp.index == lemp.nsymbol:
-                    i += 1
                     continue
 
                 action = compute_action(lemp, ap)
                 if action < 0:
-                    i += 1
                     continue
 
                 acttab_action(pActtab, ap.sp.index, action)
