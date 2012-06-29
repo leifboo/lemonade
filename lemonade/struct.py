@@ -87,7 +87,7 @@ rule = struct(
     INCOMPLETE
 ) = range(2)
 
-configstruct = struct(
+config = struct(
     'config',
     (
         'rp',           # The rule upon which the configuration is based
@@ -102,15 +102,6 @@ configstruct = struct(
         )
     )
 
-class config(configstruct):
-    def __cmp__(a, b): # Configcmp()
-        x = a.rp.index - b.rp.index
-        if x == 0:
-            x = a.dot - b.dot
-        return x
-
-    def __hash__(a): # confighash()
-        return a.rp.index*37 + a.dot
 
 
 # Every shift or reduce operation is stored as one of the following
@@ -160,32 +151,6 @@ state = struct(
     )
 
 NO_OFFSET = -2147483647
-
-class statekey(config):
-
-    def __cmp__(a, b): # statecmp()
-        rc = 0
-        while rc == 0 and a and b:
-            rc = a.rp.index - b.rp.index
-            if rc == 0:
-                rc = a.dot - b.dot
-            a = a.bp
-            b = b.bp
-
-        if rc == 0:
-            if a:
-                rc = 1
-            if b:
-                rc = -1
-
-        return rc
-
-    def __hash__(a): # statehash()
-        h = 0
-        while a:
-            h = h*571 + a.rp.index*37 + a.dot
-            a = a.bp
-        return h
 
 
 

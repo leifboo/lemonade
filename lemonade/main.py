@@ -87,6 +87,7 @@ def main(argv):
         )
 
     # Initialize the machine
+    Strsafe_init()
     Symbol_init()
     State_init()
     lem.argv0 = argv[0]

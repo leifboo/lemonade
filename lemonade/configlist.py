@@ -156,7 +156,7 @@ def Configlist_closure(lemp):
                         if not xsp._lambda:
                             break
                 else:
-                    cfp.fpl = Plink_add(cfp.fplp, newcfp)
+                    cfp.fplp = Plink_add(cfp.fplp, newcfp)
     return
 
 
