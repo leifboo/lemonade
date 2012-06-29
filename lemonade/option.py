@@ -113,7 +113,7 @@ def handleswitch(i, flags, err):
 
     lv = 0
     dv = 0.0
-    sv = 0
+    sv = None
     errcnt = 0
 
     cp = argv[i].find('=')
@@ -193,12 +193,11 @@ def OptInit(a, o, flags, err):
 
     if argv and argv[0] and op:
         i = 1
-        while argv[i]:
-            if argv[i][0] == '+' or argv[i][0] == '-':
+        for i, arg in enumerate(argv):
+            if arg[0] == '+' or arg[0] == '-':
                 errcnt += handleflags(i, flags, err)
-            elif argv[i].find('=') != -1:
+            elif arg.find('=') != -1:
                 errcnt += handleswitch(i, flags, err)
-            i += 1
 
     if errcnt > 0:
         fprintf(err, 'Valid command line options for "%s" are:\n', a[0])

@@ -9,7 +9,7 @@ def iterlinks(head, next='next'):
 
 
 def fprintf(stream, format, *args):
-    output = format * args
+    output = format % args
     stream.write(output)
     return len(output)
 

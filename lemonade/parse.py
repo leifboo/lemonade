@@ -737,7 +737,7 @@ def Parse(gp):
             nextcp = cp
 
         # Parse the token
-        token = filebuf[ps.tokenstart,cp]
+        token = filebuf[ps.tokenstart:cp]
         parseonetoken(ps, token)
 
         cp = nextcp

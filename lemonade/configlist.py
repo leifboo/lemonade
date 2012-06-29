@@ -155,7 +155,7 @@ def Configlist_closure(lemp):
                         SetUnion(newcfp.fws, xsp.firstset)
                         if not xsp._lambda:
                             break
-                if i == rp.nrhs:
+                else:
                     cfp.fpl = Plink_add(cfp.fplp, newcfp)
     return
 

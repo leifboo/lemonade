@@ -28,7 +28,7 @@ def FindRulePrecedences(xp):
     for rp in iterlinks(xp.rule):
         if rp.precsym is None:
             for i in range(rp.nrhs):
-                if rp.precsym != 0:
+                if rp.precsym is not None:
                     break
                 sp = rp.rhs[i]
                 if sp.type == MULTITERMINAL:
@@ -184,7 +184,7 @@ def getstate(lemp):
         stp.cfp = cfp                # Remember the configuration closure
         stp.statenum = lemp.nstate   # Every state gets a sequence number
         lemp.nstate += 1
-        stp.ap = 0                   # No actions, yet.
+        stp.ap = None                # No actions, yet.
         State_insert(stp, stp.bp)    # Add to the state table
         buildshifts(lemp, stp)       # Recursively compute successor states
 
@@ -335,7 +335,7 @@ def FindActions(lemp):
     # Add the accepting token
     if lemp.start:
         sp = Symbol_find(lemp.start)
-        if sp == 0:
+        if sp is None:
             sp = lemp.rule.lhs
     else:
         sp = lemp.rule.lhs
@@ -343,7 +343,7 @@ def FindActions(lemp):
     # Add to the first state (which is always the starting state of
     # the finite state machine) an action to ACCEPT if the lookahead
     # is the start nonterminal.
-    lemp.sorted[0].ap = Action_add(lemp.sorted[0].ap, ACCEPT, sp, 0)
+    lemp.sorted[0].ap = Action_add(lemp.sorted[0].ap, ACCEPT, sp, None)
 
     # Resolve conflicts
     for i in range(lemp.nstate):
@@ -399,7 +399,7 @@ def resolve_conflict(apx, apy):
     if apx.type == SHIFT and apy.type == REDUCE:
         spx = apx.sp
         spy = apy.x.rp.precsym
-        if spy == 0 or spx.prec < 0 or spy.prec < 0:
+        if spy is None or spx.prec < 0 or spy.prec < 0:
             # Not enough precedence information.
             apy.type = SRCONFLICT
             errcnt += 1
@@ -419,7 +419,7 @@ def resolve_conflict(apx, apy):
     elif apx.type == REDUCE and apy.type == REDUCE:
         spx = apx.x.rp.precsym
         spy = apy.x.rp.precsym
-        if (spx == 0 or spy == 0 or spx.prec < 0 or
+        if (spx is None or spy is None or spx.prec < 0 or
             spy.prec < 0 or spx.prec == spy.prec):
             apy.type = RRCONFLICT
             errcnt += 1

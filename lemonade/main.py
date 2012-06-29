@@ -149,7 +149,7 @@ def main(argv):
         FindActions(lem)
 
         # Compress the action tables
-        if compress == 0:
+        if not compress:
             CompressTables(lem)
 
         # Reorder and renumber the states so that states with fewer

@@ -91,8 +91,22 @@ def Symbolcmpp(a, b):
     # original order (the order they appeared in the grammar file)
     # gives the smallest parser tables in SQLite.
 
-    i1 = a.index + 10000000*(a.name[0] > 'Z')
-    i2 = b.index + 10000000*(b.name[0] > 'Z')
+    # 2012-06-28 lcs: Additionally, '$' must sort first, and
+    # '{default}' must sort last.  I can't figure out how/where the
+    # original C version guarantees this.
+
+    if a.name == '$':
+        i1 = -1
+    elif a.name == '{default}':
+        i1 = 20000000
+    else:
+        i1 = a.index + 10000000*(a.name[0] > 'Z')
+    if b.name == '$':
+        i2 = -1
+    elif b.name == '{default}':
+        i2 = 20000000
+    else:
+        i2 = b.index + 10000000*(b.name[0] > 'Z')
     return i1 - i2
 
 

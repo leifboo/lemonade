@@ -58,7 +58,7 @@ def acttab_alloc():
     return acttab(0, 0, [], [], 0, 0, 0, 0, 0)
 
 
-def acttab_action(p, lookahead, action):
+def acttab_action(p, lookahead, _action):
     '''Add a new action to the current transaction set.'''
 
     from itertools import repeat
@@ -70,17 +70,17 @@ def acttab_action(p, lookahead, action):
     if p.nLookahead == 0:
         p.mxLookahead = lookahead
         p.mnLookahead = lookahead
-        p.mnAction = action
+        p.mnAction = _action
     else:
         if p.mxLookahead < lookahead:
             p.mxLookahead = lookahead
 
         if p.mnLookahead > lookahead:
             p.mnLookahead = lookahead
-            p.mnAction = action
+            p.mnAction = _action
 
     p.aLookahead[p.nLookahead].lookahead = lookahead
-    p.aLookahead[p.nLookahead].action = action
+    p.aLookahead[p.nLookahead].action = _action
     p.nLookahead += 1
 
     return

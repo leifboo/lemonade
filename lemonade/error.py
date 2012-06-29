@@ -11,14 +11,14 @@ def findbreak(msg, min, max):
     
     spot = min
     for i in range(min, max+1):
+        if i >= len(msg):
+            spot = i
+            break
         c = msg[i]
         if c == '\t':
             msg[i] = ' '
         if c == '\n':
             msg[i] = ' '
-            spot = i
-            break
-        if c == 0:
             spot = i
             break
         if c == '-' and i < max - 1:
@@ -59,7 +59,7 @@ def ErrorMsg(filename, lineno, format, *args):
     while base < len(errmsg):
         end = restart = findbreak(errmsg[base:], 0, availablewidth)
         restart += base
-        while errmsg[restart] == ' ':
+        while restart < len(errmsg) and errmsg[restart] == ' ':
             restart += 1
         fprintf(stdout, "%s%.*s\n", prefix, end, errmsg[base:])
         base = restart

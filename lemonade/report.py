@@ -443,7 +443,7 @@ def translate_code(lemp, rp):
                      'Label %s for "%s(%s)" is never used.',
                      rp.rhsalias[i], rp.rhs[i].name, rp.rhsalias[i])
             lemp.errorcnt += 1
-        elif rp.rhsalias[i] == 0:
+        elif rp.rhsalias[i] is None:
             if has_destructor(rp.rhs[i], lemp):
                 z += ("  yy_destructor(%d,&yymsp[%d].minor);\n" %
                       (rp.rhs[i].index, i - rp.nrhs + 1))
@@ -770,12 +770,16 @@ def ReportTable(lemp, mhflag):
 
     for i in range(lemp.nstate):
         stp = lemp.sorted[i]
-        ax[i*2].stp = stp
-        ax[i*2].isTkn = True
-        ax[i*2].nAction = stp.nTknAct
-        ax[i*2+1].stp = stp
-        ax[i*2+1].isTkn = False
-        ax[i*2+1].nAction = stp.nNtAct
+        ax[i*2] = axset(
+            stp = stp,
+            isTkn = True,
+            nAction = stp.nTknAct,
+            )
+        ax[i*2+1] = axset(
+            stp = stp,
+            isTkn = False,
+            nAction = stp.nNtAct,
+            )
 
 
     # Compute the action table.  In order to try to keep the size of
@@ -1070,7 +1074,7 @@ def ReportTable(lemp, mhflag):
         for i in range(lemp.nsymbol):
             sp = lemp.symbols[i]
 
-            if sp == 0 or sp.type != TERMINAL:
+            if sp is None or sp.type != TERMINAL:
                 continue
 
             fprintf(out, "    case %d: /* %s */\n",
@@ -1255,7 +1259,7 @@ def CompressTables(lemp):
     for i in range(lemp.nstate):
         stp = lemp.sorted[i]
         nbest = 0
-        rbest = 0
+        rbest = None
         usesWildcard = False
         
         for ap in iterlinks(stp.ap):
