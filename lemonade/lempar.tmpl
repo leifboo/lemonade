@@ -1,0 +1,233 @@
+# -*- Python -*-
+
+PERCENT_PERCENT_1 = None
+PERCENT_PERCENT_2 = None
+PERCENT_PERCENT_3 = None
+yyzerominor = None
+PERCENT_PERCENT_4 = None
+
+
+
+
+yyTraceFILE = 0
+yyTracePrompt = 0
+def ParseTrace(TraceFILE, zTracePrompt):
+    yyTraceFILE = TraceFILE
+    yyTracePrompt = zTracePrompt
+    if yyTraceFILE == 0:
+        yyTracePrompt = 0
+    elif yyTracePrompt == 0:
+        yyTraceFILE = 0
+
+
+yyTokenName = XXXstructInitXXX(PERCENT_PERCENT_6)
+yyRuleName = XXXstructInitXXX(PERCENT_PERCENT_7)
+def yyGrowStack(p):
+    newSize = (p.yystksz * 2) + 100
+    pNew = realloc(p.yystack, newSize * (sizeof(pNew[0])))
+    if pNew:
+        p.yystack = pNew
+        p.yystksz = newSize
+        if yyTraceFILE:
+            fprintf(yyTraceFILE, "%sStack grows to %d entries!\n", yyTracePrompt, p.yystksz)
+
+
+
+def ParseAlloc(mallocProc):
+    pParser = (mallocProc[00])(sizeof())
+    if pParser:
+        pParser.yyidx = -1
+        yyGrowStack(pParser)
+
+    return pParser
+
+def yy_destructor(yymajor, yypminor):
+    @switch yymajor:
+    PERCENT_PERCENT_8()
+    @default:
+        break
+
+
+
+def yy_pop_parser_stack(pParser):
+    yytos = &pParser.yystack[pParser.yyidx]
+    if pParser.yyidx < 0:
+        return 0
+
+    if yyTraceFILE and (pParser.yyidx >= 0):
+        fprintf(yyTraceFILE, "%sPopping %s\n", yyTracePrompt, yyTokenName[yytos.major])
+
+    yymajor = yytos.major
+    yy_destructor(yymajor, &yytos.minor)
+    pParser.yyidx -= 1
+    return yymajor
+
+def ParseFree(p, freeProc):
+    pParser = p
+    if pParser == 0:
+        return
+
+    while pParser.yyidx >= 0:
+        yy_pop_parser_stack(pParser)
+
+    free(pParser.yystack)
+    (freeProc[00])(pParser)
+
+def yy_find_shift_action(pParser, iLookAhead):
+    stateno = pParser.yystack[pParser.yyidx].stateno
+    if (stateno > YY_SHIFT_MAX) or ((i = yy_shift_ofst[stateno]) == YY_SHIFT_USE_DFLT):
+        return yy_default[stateno]
+
+    _assert(iLookAhead != YYNOCODE)
+    i += iLookAhead
+    if ((i < 0) or (i >= ((sizeof(yy_action)) / (sizeof(yy_action[0]))))) or (yy_lookahead[i] != iLookAhead):
+        if iLookAhead > 0:
+            pass
+
+        return yy_default[stateno]
+    else:
+        return yy_action[i]
+
+
+def yy_find_reduce_action(stateno, iLookAhead):
+    _assert(stateno <= YY_REDUCE_MAX)
+    i = yy_reduce_ofst[stateno]
+    _assert(i != YY_REDUCE_USE_DFLT)
+    _assert(iLookAhead != YYNOCODE)
+    i += iLookAhead
+    _assert((i >= 0) and (i < ((sizeof(yy_action)) / (sizeof(yy_action[0])))))
+    _assert(yy_lookahead[i] == iLookAhead)
+    return yy_action[i]
+
+def yyStackOverflow(yypParser, yypMinor):
+    ParseARG_FETCH
+    yypParser.yyidx -= 1
+    if yyTraceFILE:
+        fprintf(yyTraceFILE, "%sStack Overflow!\n", yyTracePrompt)
+
+    while yypParser.yyidx >= 0:
+        yy_pop_parser_stack(yypParser)
+
+    PERCENT_PERCENT_9()
+    ParseARG_STORE
+
+def yy_shift(yypParser, yyNewState, yyMajor, yypMinor):
+    yypParser.yyidx += 1
+    if yypParser.yyidx >= yypParser.yystksz:
+        yyGrowStack(yypParser)
+        if yypParser.yyidx >= yypParser.yystksz:
+            yyStackOverflow(yypParser, yypMinor)
+            return
+
+
+    yytos = &yypParser.yystack[yypParser.yyidx]
+    yytos.stateno = yyNewState
+    yytos.major = yyMajor
+    yytos.minor = yypMinor[00]
+    if yyTraceFILE and (yypParser.yyidx > 0):
+        fprintf(yyTraceFILE, "%sShift %d\n", yyTracePrompt, yyNewState)
+        fprintf(yyTraceFILE, "%sStack:", yyTracePrompt)
+        for (i = 1; i <= yypParser.yyidx; i++):
+            fprintf(yyTraceFILE, " %s", yyTokenName[yypParser.yystack[i].major])
+
+        fprintf(yyTraceFILE, "\n")
+
+
+yyRuleInfo = XXXstructInitXXX(PERCENT_PERCENT_10)
+def yy_reduce(yypParser, yyruleno):
+    ParseARG_FETCH
+    yymsp = &yypParser.yystack[yypParser.yyidx]
+    if (yyTraceFILE and (yyruleno >= 0)) and (yyruleno < ((sizeof(yyRuleName)) / (sizeof(yyRuleName[0])))):
+        fprintf(yyTraceFILE, "%sReduce [%s].\n", yyTracePrompt, yyRuleName[yyruleno])
+
+    yygotominor = yyzerominor
+    @switch yyruleno:
+    PERCENT_PERCENT_11()
+
+    pass
+    yygoto = yyRuleInfo[yyruleno].lhs
+    yysize = yyRuleInfo[yyruleno].nrhs
+    yypParser.yyidx -= yysize
+    yyact = yy_find_reduce_action(yymsp[-yysize].stateno, yygoto)
+    if yyact < YYNSTATE:
+            yy_shift(yypParser, yyact, yygoto, &yygotominor)
+    else:
+        _assert(yyact == ((YYNSTATE + YYNRULE) + 1))
+        yy_accept(yypParser)
+
+
+def yy_parse_failed(yypParser):
+    ParseARG_FETCH
+    if yyTraceFILE:
+        fprintf(yyTraceFILE, "%sFail!\n", yyTracePrompt)
+
+    while yypParser.yyidx >= 0:
+        yy_pop_parser_stack(yypParser)
+
+    PERCENT_PERCENT_12()
+    ParseARG_STORE
+
+def yy_syntax_error(yypParser, yymajor, yyminor):
+    ParseARG_FETCH
+    PERCENT_PERCENT_13()
+    ParseARG_STORE
+
+def yy_accept(yypParser):
+    ParseARG_FETCH
+    if yyTraceFILE:
+        fprintf(yyTraceFILE, "%sAccept!\n", yyTracePrompt)
+
+    while yypParser.yyidx >= 0:
+        yy_pop_parser_stack(yypParser)
+
+    PERCENT_PERCENT_14()
+    ParseARG_STORE
+
+def Parse(yyp, yymajor, yyminor, sdecl):
+    yypParser = yyp
+    if yypParser.yyidx < 0:
+        if yypParser.yystksz <= 0:
+            yyminorunion = yyzerominor
+            yyStackOverflow(yypParser, &yyminorunion)
+            return
+
+        yypParser.yyidx = 0
+        yypParser.yyerrcnt = -1
+        yypParser.yystack[0].stateno = 0
+        yypParser.yystack[0].major = 0
+
+    yyminorunion.yy0 = yyminor
+    yyendofinput = yymajor == 0
+    ParseARG_STORE
+    if yyTraceFILE:
+        fprintf(yyTraceFILE, "%sInput %s\n", yyTracePrompt, yyTokenName[yymajor])
+
+
+    _cond = 1
+    while _cond:
+        yyact = yy_find_shift_action(yypParser, yymajor)
+        if yyact < YYNSTATE:
+            _assert(not yyendofinput)
+            yy_shift(yypParser, yyact, yymajor, &yyminorunion)
+            yypParser.yyerrcnt -= 1
+            yymajor = YYNOCODE
+        elif yyact < (YYNSTATE + YYNRULE):
+            yy_reduce(yypParser, yyact - YYNSTATE)
+        else:
+            _assert(yyact == (YYNSTATE + YYNRULE))
+            if yyTraceFILE:
+                fprintf(yyTraceFILE, "%sSyntax Error!\n", yyTracePrompt)
+
+            if yypParser.yyerrcnt <= 0:
+                yy_syntax_error(yypParser, yymajor, yyminorunion)
+
+            yypParser.yyerrcnt = 3
+            yy_destructor(yymajor, &yyminorunion)
+            if yyendofinput:
+                yy_parse_failed(yypParser)
+
+            yymajor = YYNOCODE
+
+        _cond = (yymajor != YYNOCODE) and (yypParser.yyidx >= 0)    return
+
+
