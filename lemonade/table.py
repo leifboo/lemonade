@@ -203,7 +203,6 @@ def Symbol_new(x):
             datatype = None,
             useCnt = 0,
             index = 0,
-            dtnum = 0,
             nsubsym = 0,
             subsym = None,
             )

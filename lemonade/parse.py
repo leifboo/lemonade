@@ -238,7 +238,6 @@ def parseonetoken(psp, x):
                     useCnt = 0,
                     destructor = None,
                     datatype = None,
-                    dtnum = 0,
                     )
                 psp.rhs[psp.nrhs - 1] = msp
 

@@ -40,9 +40,6 @@ symbol = struct(
                         # popped from the stack during error processing
         'datatype',     # The data type of information held by this
                         # object. Only used if type==NONTERMINAL
-        'dtnum',        # The data type number.  In the parser, the value
-                        # stack is a union.  The .yy%d element of this
-                        # union is the correct data type for this object
         # The following fields are used by MULTITERMINALs only
         'nsubsym',      # Number of constituent symbols in the MULTI
         'subsym',       # Array of constituent symbols

@@ -35,14 +35,12 @@ def main(argv):
     compress = False
     quiet = False
     statistics = False
-    mhflag = False
 
     options = (
         s_options(OPT_FLAG, "b", 'basisflag', "Print only the basis in report."),
         s_options(OPT_FLAG, "c", 'compress', "Don't compress the action table."),
         s_options(OPT_FSTR, "D", handle_D_option, "Define an %ifdef macro."),
         s_options(OPT_FLAG, "g", 'rpflag', "Print grammar without actions."),
-        s_options(OPT_FLAG, "m", 'mhflag', "Output a makeheaders compatible file"),
         s_options(OPT_FLAG, "q", 'quiet', "(Quiet) Don't print the report file."),
         s_options(OPT_FLAG, "s", 'statistics', "Print parser stats to standard output."),
         s_options(OPT_FLAG, "x", 'version', "Print the version number."),
@@ -162,13 +160,7 @@ def main(argv):
             ReportOutput(lem)
 
         # Generate the source code for the parser
-        ReportTable(lem, mhflag)
-
-        # Produce a header file for use by the scanner.  (This step is
-        # omitted if the "-m" option is used because makeheaders will
-        # generate the file for us.)
-        if not mhflag:
-            ReportHeader(lem)
+        ReportTable(lem)
 
 
     if statistics:

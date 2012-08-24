@@ -6,13 +6,25 @@
 # First off, code is include which follows the "include" declaration
 # in the input file.
 
-# %% #1
+%%
 
+
+# Next is all token values.  These constants (all generated
+# automatically by the parser generator) specify the various kinds of
+# tokens (terminals) that the parser understands.
+#
+# Each symbol here is a terminal symbol in the grammar.
+
+%%
 
 # The state of the parser is completely contained in an instance of
 # the following class.
 
 class Parser(object):
+
+    # defaults
+    YYERRORSYMBOL = None
+    YYWILDCARD = None
 
     # The next thing included is series of definitions which control
     # various aspects of the generated parser.
@@ -25,13 +37,7 @@ class Parser(object):
     #    YYERRORSYMBOL      is the code number of the error symbol.  If not
     #                       defined, then do no error processing.
 
-    # %% #3 {
-    YYNOCODE = 100
-    YYNSTATE = 278
-    YYNRULE = 148
-    YYERRORSYMBOL = None
-    YYWILDCARD = None
-    # }
+    %%
     YY_NO_ACTION     = YYNSTATE + YYNRULE + 2
     YY_ACCEPT_ACTION = YYNSTATE + YYNRULE + 1
     YY_ERROR_ACTION  = YYNSTATE + YYNRULE
@@ -87,17 +93,7 @@ class Parser(object):
     #                     shifting non-terminals after a reduce.
     #  yy_default[]       Default action for each state.
 
-    # %% #4 {
-    yy_action = [0]
-    yy_lookahead = [0]
-    YY_SHIFT_USE_DFLT = -8
-    YY_SHIFT_MAX = 165
-    yy_shift_ofst = [0]
-    YY_REDUCE_USE_DFLT = -85
-    YY_REDUCE_MAX = 99
-    yy_reduce_ofst = [0]
-    yy_default = [0]
-    #}
+    %%
     YY_SZ_ACTTAB = len(yy_action)
 
 
@@ -111,7 +107,9 @@ class Parser(object):
     # but it does not parse, the type of the token is changed to ID and
     # the parse is retried before an error is thrown.
 
-    yyFallback = [] # %% #5
+    yyFallback = [
+        %%
+        ]
 
 
     # The following structure represents a single element of the
@@ -160,10 +158,14 @@ class Parser(object):
 
     # For tracing shifts, the names of all terminals and nonterminals
     # are required.  The following table supplies these names
-    yyTokenName = [] # %% #6
+    yyTokenName = [
+        %%
+        ]
 
     # For tracing reduce actions, the names of all rules are required.
-    yyRuleName = [] # %% #7
+    yyRuleName = [
+        %%
+        ]
 
 
     def __init__(self):
@@ -290,7 +292,19 @@ class Parser(object):
 
     # The following table contains information about every rule that
     # is used during the reduce.
-    yyRuleInfo = [] # %% #10
+    from collections import namedtuple
+    yyRuleInfoEntry = namedtuple(
+        'yyRuleInfoEntry',
+        ('lhs',  # Symbol on the left-hand side of the rule
+         'nrhs', # Number of right-hand side symbols in the rule
+         ))
+    yyRuleInfo = [
+        %%
+        ]
+
+
+    # Code for each rule follows.
+    %%
 
 
     def yy_reduce(self,     # The parser
@@ -305,10 +319,11 @@ class Parser(object):
             self.yyTraceFILE.write("%sReduce [%s].\n" % (
                 self.yyTracePrompt, self.yyRuleName[yyruleno]))
 
-        yygotominor = self.yyzerominor # The LHS of the rule reduced
+        # get the rule
+        rule = getattr(self, 'rule_%03d' % yyruleno)
 
-        # %% #11 w/ParseARG_FETCH
-        # switch yyruleno
+        # 'yygotominor' is the LHS of the rule reduced
+        yygotominor = rule(**self.extra_arguments)
 
         yygoto = self.yyRuleInfo[yyruleno].lhs   # The next state
         yysize = self.yyRuleInfo[yyruleno].nrhs  # Amount to pop the stack
@@ -373,10 +388,10 @@ class Parser(object):
 
 
     def parse(
-        self,        # The parser
-        yymajor,          # The major token code number
-        yyminor,          # The value for the token
-        *extra_arguments  # Optional extra parameter(s)
+        self,              # The parser
+        yymajor,           # The major token code number
+        yyminor,           # The value for the token
+        **extra_arguments  # Optional extra parameter(s)
         ):
         '''The main parser routine.
         
@@ -397,8 +412,6 @@ class Parser(object):
                 )
             self.yystack.append(yytos)
 
-        yyminorunion = None # XXX YYMINORTYPE
-        yyminorunion.yy0 = yyminor
         yyendofinput = (yymajor == 0) # True if we are at the end of input
         self.extra_arguments = extra_arguments
         
@@ -420,7 +433,7 @@ class Parser(object):
 
             if yyact < YYNSTATE:
                 assert not yyendofinput, "Impossible to shift the $ token"
-                self.yy_shift(yyact, yymajor, yyminorunion)
+                self.yy_shift(yyact, yymajor, yyminor)
                 self.yyerrcnt -= 1
                 yymajor = YYNOCODE
             elif yyact < YYNSTATE + YYNRULE:
@@ -452,7 +465,7 @@ class Parser(object):
                     #    shifted successfully.
                     #
                     if self.yyerrcnt < 0:
-                        self.yy_syntax_error(yymajor, yyminorunion)
+                        self.yy_syntax_error(yymajor, yyminor)
 
                     yymx = self.yystack[-1].major
                     if yymx == YYERRORSYMBOL or yyerrorhit:
@@ -476,11 +489,7 @@ class Parser(object):
                             self.yy_parse_failed()
                             yymajor = YYNOCODE
                         elif yymx != YYERRORSYMBOL:
-                            # XXX
-                            # YYMINORTYPE u2;
-                            # u2.YYERRSYMDT = 0
-                            u2 = None
-                            self.yy_shift(yyact, YYERRORSYMBOL, u2)
+                            self.yy_shift(yyact, YYERRORSYMBOL, None)
 
                     self.yyerrcnt = 3
                     yyerrorhit = True
@@ -496,7 +505,7 @@ class Parser(object):
                     # three input tokens have been successfully shifted.
                     #
                     if self.yyerrcnt <= 0:
-                        self.yy_syntax_error(yymajor, yyminorunion)
+                        self.yy_syntax_error(yymajor, yyminor)
 
                     self.yyerrcnt = 3
                     if yyendofinput:

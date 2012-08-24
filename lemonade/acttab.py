@@ -114,6 +114,7 @@ def acttab_insert(p):
     #
     # i is the index in p.aAction[] where p.mnLookahead is inserted.
 
+    i = 0 # in case the range is empty
     for i in range(p.nAction + p.mnLookahead):
         if p.aAction[i].lookahead < 0:
             for j in range(p.nLookahead):
