@@ -74,12 +74,6 @@ def main(argv):
         None,
         None,
         None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
         0, 0, 0, 0,
         None,
         )

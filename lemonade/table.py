@@ -199,8 +199,6 @@ def Symbol_new(x):
             assoc = UNK,
             firstset = None,
             _lambda = False,
-            destructor = None,
-            datatype = None,
             useCnt = 0,
             index = 0,
             nsubsym = 0,

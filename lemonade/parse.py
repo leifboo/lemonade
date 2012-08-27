@@ -30,11 +30,9 @@ MAXRHS = 1000
     PRECEDENCE_MARK_2,
     RESYNC_AFTER_RULE_ERROR,
     RESYNC_AFTER_DECL_ERROR,
-    WAITING_FOR_DESTRUCTOR_SYMBOL,
-    WAITING_FOR_DATATYPE_SYMBOL,
     WAITING_FOR_FALLBACK_ID,
     WAITING_FOR_WILDCARD_ID,
-    ) = range(20)
+    ) = range(18)
 
 
 pstate = struct(
@@ -236,8 +234,6 @@ def parseonetoken(psp, x):
                     firstset = None,
                     _lambda = False,
                     useCnt = 0,
-                    destructor = None,
-                    datatype = None,
                     )
                 psp.rhs[psp.nrhs - 1] = msp
 
@@ -290,10 +286,6 @@ def parseonetoken(psp, x):
                 psp.declargslot = 'include'
             elif strcmp(x, "code") == 0:
                 psp.declargslot = 'extracode'
-            elif strcmp(x, "token_destructor") == 0:
-                psp.declargslot = 'tokendest'
-            elif strcmp(x, "default_destructor") == 0:
-                psp.declargslot = 'vardest'
             elif strcmp(x, "token_prefix") == 0:
                 psp.declargslot = 'tokenprefix'
                 psp.insertLineMacro = False
@@ -303,19 +295,8 @@ def parseonetoken(psp, x):
                 psp.declargslot = 'accept'
             elif strcmp(x, "parse_failure") == 0:
                 psp.declargslot = 'failure'
-            elif strcmp(x, "stack_overflow") == 0:
-                psp.declargslot = 'overflow'
             elif strcmp(x, "extra_argument") == 0:
                 psp.declargslot = 'arg'
-                psp.insertLineMacro = False
-            elif strcmp(x, "token_type") == 0:
-                psp.declargslot = 'tokentype'
-                psp.insertLineMacro = False
-            elif strcmp(x, "default_type") == 0:
-                psp.declargslot = 'vartype'
-                psp.insertLineMacro = False
-            elif strcmp(x, "stack_size") == 0:
-                psp.declargslot = 'stacksize'
                 psp.insertLineMacro = False
             elif strcmp(x, "start_symbol") == 0:
                 psp.declargslot = 'start'
@@ -332,10 +313,6 @@ def parseonetoken(psp, x):
                 psp.preccounter += 1
                 psp.declassoc = NONE
                 psp.state = WAITING_FOR_PRECEDENCE_SYMBOL
-            elif strcmp(x, "destructor") == 0:
-                psp.state = WAITING_FOR_DESTRUCTOR_SYMBOL
-            elif strcmp(x, "type") == 0:
-                psp.state = WAITING_FOR_DATATYPE_SYMBOL
             elif strcmp(x, "fallback") == 0:
                 psp.fallback = 0
                 psp.state = WAITING_FOR_FALLBACK_ID
@@ -352,30 +329,6 @@ def parseonetoken(psp, x):
                      'Illegal declaration keyword: "%s".', x)
             psp.errorcnt += 1
             psp.state = RESYNC_AFTER_DECL_ERROR
-
-    elif psp.state == WAITING_FOR_DESTRUCTOR_SYMBOL:
-        if not x[0].isalpha():
-            ErrorMsg(psp.filename, psp.tokenlineno,
-                     "Symbol name missing after %%destructor keyword")
-            psp.errorcnt += 1
-            psp.state = RESYNC_AFTER_DECL_ERROR
-        else:
-            sp = Symbol_new(x)
-            psp.declargslot = 'destructor'
-            psp.insertLineMacro = True
-            psp.state = WAITING_FOR_DECL_ARG
-
-    elif psp.state == WAITING_FOR_DATATYPE_SYMBOL:
-        if not x[0].isalpha():
-            ErrorMsg(psp.filename, psp.tokenlineno,
-                     "Symbol name missing after %%destructor keyword")
-            psp.errorcnt += 1
-            psp.state = RESYNC_AFTER_DECL_ERROR
-        else:
-            sp = Symbol_new(x)
-            psp.declargslot = 'datatype'
-            psp.insertLineMacro = False
-            psp.state = WAITING_FOR_DECL_ARG
 
     elif psp.state == WAITING_FOR_PRECEDENCE_SYMBOL:
         if x[0] == '.':

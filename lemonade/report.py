@@ -316,15 +316,6 @@ def tplt_print(out, lemp, str):
     return
 
 
-def has_destructor(sp, lemp):
-    '''Return True if the given symbol has a destructor.'''
-    if sp.type == TERMINAL:
-        ret = lemp.tokendest is not None
-    else:
-        ret = (lemp.vardest is not None) or (sp.destructor is not None)
-    return ret
-
-
 def translate_code(lemp, rp):
     '''Take the string that is the action associated with a rule and
     expand the symbols so that they refer to elements of the parser
@@ -383,21 +374,13 @@ def translate_code(lemp, rp):
                  rp.lhsalias, rp.lhs.name, rp.lhsalias)
         lemp.errorcnt += 1
 
-    # Generate destructor code for RHS symbols which are not used in
-    # the reduce code
+    # Warn about unused labels
     for i in range(rp.nrhs):
         if rp.rhsalias[i] and not used[i]:
             ErrorMsg(lemp.filename, rp.ruleline,
                      'Label %s for "%s(%s)" is never used.',
                      rp.rhsalias[i], rp.rhs[i].name, rp.rhsalias[i])
             lemp.errorcnt += 1
-        elif rp.rhsalias[i] is None:
-            if has_destructor(rp.rhs[i], lemp):
-                z += ("  yy_destructor(%d,&self.yystack[%d].minor);\n" %
-                      (rp.rhs[i].index, i - rp.nrhs))
-            else:
-                # No destructor defined for this term
-                pass
 
     if rp.code:
         rp.code = Strsafe(z if z else "")
@@ -802,13 +785,6 @@ def ReportTable(lemp):
         fprintf(out, "%s    # ", indent)
         writeRuleText(out, rp)
         fprintf(out, "\n")
-
-        while False: #for rp2 in iterlinks(rp.next):
-            if rp2.code == rp.code:
-                fprintf(out, "      case %d: /* ", rp2.index)
-                writeRuleText(out, rp2)
-                fprintf(out, " */\n")
-                rp2.code = None
 
         fprintf(out, "%s    yygotominor = None\n", indent)
         if rp.code:

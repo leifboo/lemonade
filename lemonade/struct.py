@@ -36,10 +36,6 @@ symbol = struct(
         'firstset',     # First-set for all rules of this symbol
         '_lambda',      # True if NT and can generate an empty string
         'useCnt',       # Number of times used
-        'destructor',   # Code which executes whenever this symbol is
-                        # popped from the stack during error processing
-        'datatype',     # The data type of information held by this
-                        # object. Only used if type==NONTERMINAL
         # The following fields are used by MULTITERMINALs only
         'nsubsym',      # Number of constituent symbols in the MULTI
         'subsym',       # Array of constituent symbols
@@ -184,18 +180,12 @@ lemon = struct(
         'wildcard',     # Token that matches anything
         'name',         # Name of the generated parser
         'arg',          # Declaration of the 3th argument to parser
-        'tokentype',    # Type of terminal symbols in the parser stack
-        'vartype',      # The default type of non-terminal symbols
         'start',        # Name of the start symbol for the grammar
-        'stacksize',    # Size of the parser stack
         'include',      # Code to put at the start of the C file
         'error',        # Code to execute when an error is seen
-        'overflow',     # Code to execute on a stack overflow
         'failure',      # Code to execute on parser failure
         'accept',       # Code to execute when the parser excepts
         'extracode',    # Code appended to the generated file
-        'tokendest',    # Code to execute to destroy token data
-        'vardest',      # Code for the default non-terminal destructor
         'filename',     # Name of the input file
         'outname',      # Name of the current output file
         'tokenprefix',  # A prefix added to token names in the .h file
