@@ -3,55 +3,45 @@ Main program file for the LEMON parser generator.
 '''
 
 from build import *
-from option import *
 from parse import *
 from report import *
 from struct import *
 
 from ccruft import printf
 from sys import stderr, exit
-
-
-azDefine = []  # Names of the -D macros
-
-
-# This routine is called with the argument to each -D command-line option.
-# Add the macro defined to the azDefine array.
-
-def handle_D_option(z):
-    eq = z.find('=')
-    if eq != -1:
-        z = z[:eq]
-    azDefine.append(z)
-    return
+from optparse import OptionParser
 
 
 def main(argv):
     '''The main program.  Parse the command line and do it...'''
 
-    version = False
-    rpflag = False
-    basisflag = False
-    compress = False
-    quiet = False
-    statistics = False
+    parser = OptionParser(usage="%prog [options] FILE")
+    parser.add_option("-b",
+                      action="store_true", dest='basisflag', default=False,
+                      help="print only the basis in report")
+    parser.add_option("-c",
+                      action="store_true", dest='compress', default=False,
+                      help="don't compress the action table")
+    parser.add_option("-g",
+                      action="store_true", dest='rpflag', default=False,
+                      help="print grammar without actions")
+    parser.add_option("-q",
+                      action="store_true", dest='quiet', default=False,
+                      help="don't print the report file")
+    parser.add_option("-s",
+                      action="store_true", dest='statistics', default=False,
+                      help="print parser stats to standard output")
+    parser.add_option("-v",
+                      action="store_true", dest='version', default=False,
+                      help="print the version number")
 
-    options = (
-        s_options(OPT_FLAG, "b", 'basisflag', "Print only the basis in report."),
-        s_options(OPT_FLAG, "c", 'compress', "Don't compress the action table."),
-        s_options(OPT_FSTR, "D", handle_D_option, "Define an %ifdef macro."),
-        s_options(OPT_FLAG, "g", 'rpflag', "Print grammar without actions."),
-        s_options(OPT_FLAG, "q", 'quiet', "(Quiet) Don't print the report file."),
-        s_options(OPT_FLAG, "s", 'statistics', "Print parser stats to standard output."),
-        s_options(OPT_FLAG, "x", 'version', "Print the version number."),
-        )
+    options, inputFiles = parser.parse_args(argv[1:])
 
-    OptInit(argv, options, locals(), stderr)
-    if version:
-        printf("Lemon version 1.0\n")
+    if options.version:
+        printf("Lemonade 1.0\n")
         exit(0)
 
-    if OptNArgs() != 1:
+    if len(inputFiles) != 1:
         fprintf(stderr, "Exactly one filename argument is required.\n")
         exit(1)
 
@@ -83,8 +73,8 @@ def main(argv):
     Symbol_init()
     State_init()
     lem.argv0 = argv[0]
-    lem.filename = OptArg(0)
-    lem.basisflag = basisflag
+    lem.filename = inputFiles[0]
+    lem.basisflag = options.basisflag
     Symbol_new("$")
     lem.errsym = Symbol_new("error")
     lem.errsym.useCnt = 0
@@ -112,7 +102,7 @@ def main(argv):
     lem.nterminal = i
 
     # Generate a reprint of the grammar, if requested on the command line
-    if rpflag:
+    if options.rpflag:
         Reprint(lem)
     else:
         # Initialize the size for all follow and first sets
@@ -142,7 +132,7 @@ def main(argv):
         FindActions(lem)
 
         # Compress the action tables
-        if not compress:
+        if not options.compress:
             CompressTables(lem)
 
         # Reorder and renumber the states so that states with fewer
@@ -150,14 +140,14 @@ def main(argv):
         ResortStates(lem)
 
         # Generate a report of the parser generated.  (the "y.output" file)
-        if not quiet:
+        if not options.quiet:
             ReportOutput(lem)
 
         # Generate the source code for the parser
         ReportTable(lem)
 
 
-    if statistics:
+    if options.statistics:
         printf("Parser statistics: %d terminals, %d nonterminals, %d rules\n",
                lem.nterminal, lem.nsymbol - lem.nterminal, lem.nrule)
         printf("                   %d states, %d parser table entries, %d conflicts\n",

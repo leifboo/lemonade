@@ -424,77 +424,6 @@ def parseonetoken(psp, x):
     return
 
 
-# Run the proprocessor over the input file text.  The global variables
-# azDefine[0] through azDefine[nDefine-1] contains the names of all
-# defined macros.  This routine looks for "%ifdef" and "%ifndef" and
-# "%endif" and comments them out.  Text in between is also commented
-# out as appropriate.
-
-def preprocess_input(z):
-    from main import azDefine
-    from sys import stderr
-
-    exclude = 0
-    start = 0
-    lineno = 1
-    start_lineno = 1
-
-    for i in range(len(z)):
-
-        if z[i] == '\n':
-            lineno += 1
-
-        if z[i] != '%' or (i > 0 and z[i-1] != '\n'):
-            continue
-
-        if z[i:i+6] == "%endif" and z[i+6].isspace():
-            if exclude:
-                exclude -= 1
-                if exclude == 0:
-                    for j in range(start, i):
-                        if z[j] != '\n':
-                            z[j] = ' '
-            j = i
-            while j < len(z) and z[j] != '\n':
-                z[j] = ' '
-                j += 1
-
-        elif ((z[i:i+6] == "%ifdef" and z[i+6].isspace()) or
-              (z[i:i+7] == "%ifndef" and z[i+7].isspace())):
-            if exclude:
-                exclude += 1
-            else:
-                j = i + 7
-                while j < len(z) and z[j].isspace():
-                    j += 1
-                n = 0
-                while j+n < len(z) and z[j+n] and not z[j+n].isspace():
-                    n += 1
-                exclude = 1
-                for k in range(len(azDefine)):
-                    if azDefine[k] == z[j:j+n]:
-                        exclude = 0
-                        break
-
-                if z[i + 3] == 'n': # %ifndef
-                    exclude = not exclude
-
-                if exclude:
-                    start = i
-                    start_lineno = lineno
-
-            j = i
-            while j < len(z) and z[j] != '\n':
-                z[j] = ' '
-                j += 1
-
-    if exclude:
-        fprintf(stderr, "unterminated %%ifdef starting on line %d\n", start_lineno)
-        exit(1)
-
-    return
-
-
 # In spite of its name, this function is really a scanner.  It read in
 # the entire input file (all at once) then tokenizes it.  Each token
 # is passed to the function "parseonetoken" which builds all the
@@ -536,8 +465,6 @@ def Parse(gp):
     filebuf = fp.read()
     fp.close()
 
-    # Make an initial pass through the file to handle %ifdef and %ifndef
-    preprocess_input(filebuf)
     lineno = 1
 
 

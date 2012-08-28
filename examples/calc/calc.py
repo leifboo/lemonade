@@ -3,7 +3,7 @@ from lemonade.main import main as lemonade
 
 # generate our grammar
 try:
-    lemonade(("lemonade", "gram.y"))
+    lemonade(["lemonade", "-q", "gram.y"])
 except SystemExit:
     pass
 
