@@ -3,12 +3,13 @@ Main program file for the LEMON parser generator.
 '''
 
 from build import *
+from exceptions import *
 from parse import *
 from report import *
 from struct import *
 
 from ccruft import printf
-from sys import stderr, exit
+from sys import stderr
 from optparse import OptionParser
 
 
@@ -39,11 +40,39 @@ def main(argv):
 
     if options.version:
         printf("Lemonade 1.0\n")
-        exit(0)
+        return 0
 
     if len(inputFiles) != 1:
         fprintf(stderr, "Exactly one filename argument is required.\n")
-        exit(1)
+        return 1
+
+    try:
+        lem = generate(
+            inputFiles[0],
+            basisflag = options.basisflag,
+            rpflag = options.rpflag,
+            compress = not options.compress,
+            quiet = options.quiet,
+            statistics = options.statistics,
+            )
+    except EmptyGrammarError:
+        fprintf(stderr, "Empty grammar.\n")
+        return 1
+    except BadGrammarError:
+        return 1
+
+    return lem.errorcnt + lem.nconflict
+
+
+def generate(inputFile,
+             outputStream = None,
+             basisflag = False,
+             rpflag = False,
+             compress = True,
+             quiet = True,
+             statistics = False,
+             ):
+    import sys
 
     lem = lemon(
         None,
@@ -66,9 +95,9 @@ def main(argv):
     Strsafe_init()
     Symbol_init()
     State_init()
-    lem.argv0 = argv[0]
-    lem.filename = inputFiles[0]
-    lem.basisflag = options.basisflag
+    lem.argv0 = sys.argv[0]
+    lem.filename = inputFile
+    lem.basisflag = basisflag
     Symbol_new("$")
     lem.errsym = Symbol_new("error")
     lem.errsym.useCnt = 0
@@ -76,10 +105,9 @@ def main(argv):
     # Parse the input file
     Parse(lem)
     if lem.errorcnt:
-        exit(lem.errorcnt)
+        raise BadGrammarError()
     if lem.nrule == 0:
-        fprintf(stderr, "Empty grammar.\n")
-        exit(1)
+        raise EmptyGrammarError()
 
     # Count and index the symbols of the grammar
     lem.nsymbol = Symbol_count()
@@ -96,7 +124,7 @@ def main(argv):
     lem.nterminal = i
 
     # Generate a reprint of the grammar, if requested on the command line
-    if options.rpflag:
+    if rpflag:
         Reprint(lem)
     else:
         # Initialize the size for all follow and first sets
@@ -126,7 +154,7 @@ def main(argv):
         FindActions(lem)
 
         # Compress the action tables
-        if not options.compress:
+        if compress:
             CompressTables(lem)
 
         # Reorder and renumber the states so that states with fewer
@@ -134,14 +162,14 @@ def main(argv):
         ResortStates(lem)
 
         # Generate a report of the parser generated.  (the "y.output" file)
-        if not options.quiet:
+        if not quiet:
             ReportOutput(lem)
 
         # Generate the source code for the parser
-        ReportTable(lem)
+        ReportTable(lem, outputStream)
 
 
-    if options.statistics:
+    if statistics:
         printf("Parser statistics: %d terminals, %d nonterminals, %d rules\n",
                lem.nterminal, lem.nsymbol - lem.nterminal, lem.nrule)
         printf("                   %d states, %d parser table entries, %d conflicts\n",
@@ -150,6 +178,5 @@ def main(argv):
     if lem.nconflict:
         fprintf(stderr, "%d parsing conflicts.\n", lem.nconflict)
 
-    exit(lem.errorcnt + lem.nconflict)
-    return lem.errorcnt + lem.nconflict
+    return lem
 

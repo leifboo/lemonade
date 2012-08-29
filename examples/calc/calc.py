@@ -1,16 +1,20 @@
 
 import sys
 
-from lemonade.main import main as lemonade
 
-# generate our grammar
-try:
-    lemonade(["lemonade", "-q", "gram.y"])
-except SystemExit:
-    pass
+def generateGrammar():
+    from lemonade.main import generate
+    from os.path import join, dirname
+    from StringIO import StringIO
 
-# import it
-from gram import *
+    inputFile = join(dirname(__file__), "gram.y")
+    outputStream = StringIO()
+    generate(inputFile, outputStream)
+    return outputStream.getvalue()
+
+
+# generate and import our grammar
+exec generateGrammar() in globals()
 
 
 #
@@ -74,5 +78,9 @@ class Delegate(object):
 
 p = Parser(Delegate())
 #p.trace(sys.stdout, "# ")
-p.parse(tokenize(sys.argv[1]))
+
+if len(sys.argv) == 2:
+    p.parse(tokenize(sys.argv[1]))
+else:
+    print >>sys.stderr, "usage: %s EXPRESSION" % sys.argv[0]
 

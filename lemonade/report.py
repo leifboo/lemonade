@@ -365,17 +365,20 @@ def writeRuleText(out, rp):
     return
 
 
-def ReportTable(lemp):
+def ReportTable(lemp, outputStream=None):
     '''Generate C source code for the parser.'''
 
     _in = tplt_open(lemp)
     if _in is None:
         return
 
-    out = file_open(lemp, ".py", "wb")
-    if out is None:
-        _in.close()
-        return
+    if outputStream is None:
+        out = file_open(lemp, ".py", "wb")
+        if out is None:
+            _in.close()
+            return
+    else:
+        out = outputStream
 
 
     indent = tplt_xfer(lemp.name, _in, out)
@@ -720,7 +723,8 @@ def ReportTable(lemp):
 
 
     _in.close()
-    out.close()
+    if not outputStream:
+        out.close()
 
     return
 
