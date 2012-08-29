@@ -2,11 +2,12 @@
 %left PLUS MINUS.
 %left DIVIDE TIMES.
 
-program ::= expr(A).   { print(A); }
+program(print_result) ::= expr(result).
 
-expr(A) ::= expr(B) MINUS  expr(C).  { A = B - C; }
-expr(A) ::= expr(B) PLUS   expr(C).  { A = B + C; }
-expr(A) ::= expr(B) TIMES  expr(C).  { A = B * C; }
-expr(A) ::= expr(B) DIVIDE expr(C).  { A = B / C; }
-        
-expr(A) ::= NUM(B). { A = B; }
+expr(sub) ::= expr(a) MINUS  expr(b).
+expr(add) ::= expr(a) PLUS   expr(b).
+expr(mul) ::= expr(a) TIMES  expr(b).
+expr(div) ::= expr(a) DIVIDE expr(b).
+
+expr(num) ::= NUM(value).
+

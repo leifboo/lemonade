@@ -84,7 +84,11 @@ def parseonetoken(psp, x):
             psp.lhsalias = None
             psp.state = WAITING_FOR_ARROW
         elif x[0] == '{':
-            if psp.prevrule is None:
+            if True:
+                ErrorMsg(psp.filename, psp.tokenlineno,
+                         "Code fragment actions are not supported.")
+                psp.errorcnt += 1
+            elif psp.prevrule is None:
                 ErrorMsg(psp.filename, psp.tokenlineno,
                          "There is not prior rule upon which to attach the code "
                          "fragment which begins on this line.")
@@ -282,15 +286,8 @@ def parseonetoken(psp, x):
             if strcmp(x, "name") == 0:
                 psp.declargslot = 'name'
                 psp.insertLineMacro = False
-            elif strcmp(x, "include") == 0:
-                psp.declargslot = 'include'
-            elif strcmp(x, "code") == 0:
-                psp.declargslot = 'extracode'
             elif strcmp(x, "token_prefix") == 0:
                 psp.declargslot = 'tokenprefix'
-                psp.insertLineMacro = False
-            elif strcmp(x, "extra_argument") == 0:
-                psp.declargslot = 'arg'
                 psp.insertLineMacro = False
             elif strcmp(x, "start_symbol") == 0:
                 psp.declargslot = 'start'

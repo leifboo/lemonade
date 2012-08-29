@@ -179,10 +179,7 @@ lemon = struct(
         'errsym',       # The error symbol
         'wildcard',     # Token that matches anything
         'name',         # Name of the generated parser
-        'arg',          # Declaration of the 3th argument to parser
         'start',        # Name of the start symbol for the grammar
-        'include',      # Code to put at the start of the C file
-        'extracode',    # Code appended to the generated file
         'filename',     # Name of the input file
         'outname',      # Name of the current output file
         'tokenprefix',  # A prefix added to token names in the .h file

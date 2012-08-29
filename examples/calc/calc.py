@@ -57,6 +57,20 @@ class Delegate(object):
         return
 
 
+    #
+    # reduce actions
+    #
+
+    def sub(self, a, b):  return a - b
+    def add(self, a, b):  return a + b
+    def mul(self, a, b):  return a * b
+    def div(self, a, b):  return a / b
+    def num(self, value): return value
+
+    def print_result(self, result):
+        print result
+        return
+
 
 p = Parser(Delegate())
 #p.trace(sys.stdout, "# ")

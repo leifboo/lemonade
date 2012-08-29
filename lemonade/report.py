@@ -316,75 +316,21 @@ def tplt_print(out, lemp, str):
     return
 
 
-def translate_code(lemp, rp):
-    '''Take the string that is the action associated with a rule and
-    expand the symbols so that they refer to elements of the parser
-    stack.
-    '''
-
-    from parse import MAXRHS
-    from error import ErrorMsg
-    import re
-    
-    lhsused = False          # True if the LHS element has been used
-    used = [False] * MAXRHS  # True for each RHS element which is used
-
-    if rp.code is None:
-        rp.code = "\n"
-        rp.line = rp.ruleline
-
-    z = ""
-    l = re.split('(@?[_A-Za-z][_A-Za-z0-9]*)', rp.code)
-
-    for index, item in enumerate(l):
-        if index % 2 == 0:
-            z += item
-            continue
-
-        if item.startswith('@'):
-            at = '@'
-            cp = item[1:]
-        else:
-            at = ''
-            cp = item
-
-        if cp == rp.lhsalias:
-            z += at + "yygotominor"
-            lhsused = True
-        else:
-            for i in range(rp.nrhs):
-                if cp == rp.rhsalias[i]:
-                    if at:
-                        # If the argument is of the form @X then
-                        # substitute the token number of X, not the
-                        # value of X.
-                        z += "self.yystack[%d].major" % (i - rp.nrhs)
-                    else:
-                        sp = rp.rhs[i]
-                        z += "self.yystack[%d].minor" % (i - rp.nrhs)
-                    used[i] = True
-                    break
-            else:
-                z += item
-
-    # Check to make sure the LHS has been used
-    if rp.lhsalias and not lhsused:
-        ErrorMsg(lemp.filename, rp.ruleline,
-                 'Label "%s" for "%s(%s)" is never used.',
-                 rp.lhsalias, rp.lhs.name, rp.lhsalias)
-        lemp.errorcnt += 1
-
-    # Warn about unused labels
-    for i in range(rp.nrhs):
-        if rp.rhsalias[i] and not used[i]:
-            ErrorMsg(lemp.filename, rp.ruleline,
-                     'Label %s for "%s(%s)" is never used.',
-                     rp.rhsalias[i], rp.rhs[i].name, rp.rhsalias[i])
-            lemp.errorcnt += 1
-
-    if rp.code:
-        rp.code = Strsafe(z if z else "")
-
+def generate_action(out, indent, lemp, rp):
+    fprintf(out, "%sdef action_%03d(self):\n", indent, rp.index)
+    fprintf(out, "%s    # ", indent)
+    writeRuleText(out, rp)
+    fprintf(out, "\n")
+    if rp.lhsalias:
+        fprintf(out, "%s    return self.delegate.%s(\n", indent, rp.lhsalias)
+        for i in range(rp.nrhs):
+            if rp.rhsalias[i]:
+                fprintf(out,
+                        "%s        %s = self.yystack[%d].minor,\n",
+                        indent, rp.rhsalias[i], i - rp.nrhs)
+        fprintf(out, "%s        )\n", indent)
+    else:
+        fprintf(out, "%s    return None\n", indent)
     return
 
 
@@ -431,14 +377,6 @@ def ReportTable(lemp):
         _in.close()
         return
 
-    tplt_xfer(lemp.name, _in, out)
-
-
-    #
-    # Generate the include code, if any
-    #
-    
-    tplt_print(out, lemp, lemp.include)
 
     indent = tplt_xfer(lemp.name, _in, out)
 
@@ -775,31 +713,11 @@ def ReportTable(lemp):
     #
     
     for rp in iterlinks(lemp.rule):
-        translate_code(lemp, rp)
+        generate_action(out, indent, lemp, rp)
 
-    for rp in iterlinks(lemp.rule):
-        if rp.code is None:
-            continue
-
-        fprintf(out, "%sdef action_%03d(self):\n", indent, rp.index)
-        fprintf(out, "%s    # ", indent)
-        writeRuleText(out, rp)
-        fprintf(out, "\n")
-
-        fprintf(out, "%s    yygotominor = None\n", indent)
-        if rp.code:
-            fprintf(out, "%s    %s\n", indent, rp.code.strip())
-        fprintf(out, "%s    return yygotominor\n", indent)
 
     tplt_xfer(lemp.name, _in, out)
 
-
-    #
-    # Append any addition code the user desires
-    #
-    
-    tplt_print(out, lemp, lemp.extracode)
-    
 
     _in.close()
     out.close()
