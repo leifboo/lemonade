@@ -289,12 +289,6 @@ def parseonetoken(psp, x):
             elif strcmp(x, "token_prefix") == 0:
                 psp.declargslot = 'tokenprefix'
                 psp.insertLineMacro = False
-            elif strcmp(x, "syntax_error") == 0:
-                psp.declargslot = 'error'
-            elif strcmp(x, "parse_accept") == 0:
-                psp.declargslot = 'accept'
-            elif strcmp(x, "parse_failure") == 0:
-                psp.declargslot = 'failure'
             elif strcmp(x, "extra_argument") == 0:
                 psp.declargslot = 'arg'
                 psp.insertLineMacro = False

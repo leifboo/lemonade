@@ -1,4 +1,6 @@
 
+import sys
+
 from lemonade.main import main as lemonade
 
 # generate our grammar
@@ -10,28 +12,53 @@ except SystemExit:
 # import it
 from gram import *
 
-import re, sys
 
+#
+# the lexer
+#
 
-tokenCode = {
+tokenType = {
     '+': PLUS,
     '-': MINUS,
     '/': DIVIDE,
     '*': TIMES,
     }
 
+def tokenize(input):
+    import re
+    tokenText = re.split("([+-/*])|\s*", input)
+    for text in tokenText:
+        if text is None:
+            continue
+        type = tokenType.get(text)
+        if type is None:
+            type = NUM
+            value = float(text)
+        else:
+            value = None
+        yield (type, value)
+    return
 
-tokens = re.split(" ?([+-/*]) ?", sys.argv[1])
-print tokens
 
-p = Parser()
-for t in tokens:
-    yymajor = tokenCode.get(t)
-    if yymajor is None:
-        yymajor = NUM
-        yyminor = float(t)
-    else:
-        yyminor = None
-    p.parse(yymajor, yyminor)
-p.parse(0, None)
+#
+# the delegate
+#
+
+class Delegate(object):
+
+    def accept(self):
+        return
+
+    def parse_failed(self):
+        assert False, "Giving up.  Parser is hopelessly lost..."
+
+    def syntax_error(self, token):
+        print >>sys.stderr, "Syntax error!"
+        return
+
+
+
+p = Parser(Delegate())
+#p.trace(sys.stdout, "# ")
+p.parse(tokenize(sys.argv[1]))
 

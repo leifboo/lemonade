@@ -440,7 +440,7 @@ def ReportTable(lemp):
     
     tplt_print(out, lemp, lemp.include)
 
-    tplt_xfer(lemp.name, _in, out)
+    indent = tplt_xfer(lemp.name, _in, out)
 
 
     #
@@ -449,8 +449,8 @@ def ReportTable(lemp):
     
     prefix = lemp.tokenprefix or ""
     for i in range(1, lemp.nterminal):
-        fprintf(out, "%s%-30s = %2d\n",
-                prefix, lemp.symbols[i].name, i)
+        fprintf(out, "%s%s%-30s = %2d\n",
+                indent, prefix, lemp.symbols[i].name, i)
 
     indent = tplt_xfer(lemp.name, _in, out)
 
@@ -740,7 +740,7 @@ def ReportTable(lemp):
         if (i & 3) == 3:
             fprintf(out, "\n")
 
-    if (i & 3) != 0:
+    if (i & 3) != 3:
         fprintf(out, "\n")
 
     indent = tplt_xfer(lemp.name, _in, out)
@@ -781,7 +781,7 @@ def ReportTable(lemp):
         if rp.code is None:
             continue
 
-        fprintf(out, "%sdef rule_%03d(self):\n", indent, rp.index)
+        fprintf(out, "%sdef action_%03d(self):\n", indent, rp.index)
         fprintf(out, "%s    # ", indent)
         writeRuleText(out, rp)
         fprintf(out, "\n")
@@ -791,30 +791,6 @@ def ReportTable(lemp):
             fprintf(out, "%s    %s\n", indent, rp.code.strip())
         fprintf(out, "%s    return yygotominor\n", indent)
 
-    tplt_xfer(lemp.name, _in, out)
-
-
-    #
-    # Generate code which executes if a parse fails
-    #
-    
-    tplt_print(out, lemp, lemp.failure)
-    tplt_xfer(lemp.name, _in, out)
-
-
-    #
-    # Generate code which executes when a syntax error occurs
-    #
-    
-    tplt_print(out, lemp, lemp.error)
-    tplt_xfer(lemp.name, _in, out)
-
-
-    #
-    # Generate code which executes when the parser accepts its input
-    #
-    
-    tplt_print(out, lemp, lemp.accept)
     tplt_xfer(lemp.name, _in, out)
 
 

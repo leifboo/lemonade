@@ -182,9 +182,6 @@ lemon = struct(
         'arg',          # Declaration of the 3th argument to parser
         'start',        # Name of the start symbol for the grammar
         'include',      # Code to put at the start of the C file
-        'error',        # Code to execute when an error is seen
-        'failure',      # Code to execute on parser failure
-        'accept',       # Code to execute when the parser excepts
         'extracode',    # Code appended to the generated file
         'filename',     # Name of the input file
         'outname',      # Name of the current output file
