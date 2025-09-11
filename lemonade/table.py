@@ -26,7 +26,7 @@ s_xnode = struct(
     's_xnode', (
         'data',   # The data
         'key',    # The key
-        'next',   # Next entry with the same hash
+        '_next',  # Next entry with the same hash
         '_from',  # Previous link
         )
     )
@@ -61,7 +61,7 @@ def insert(array, key, data, hash, cmp):
             # An existing entry with the same key is found.
             # Fail because overwrite is not allowed.
             return False
-        np = np.__next__
+        np = np._next
 
 
     if array.count >= array.size:
@@ -77,8 +77,8 @@ def insert(array, key, data, hash, cmp):
             h = hash(oldnp.key) & (size - 1)
             newnp = tbl[i]
             if ht[h]:
-                ht[h]._from = newnp.__next__
-            newnp.next = ht[h]
+                ht[h]._from = newnp._next
+            newnp._next = ht[h]
             newnp.key = oldnp.key
             newnp.data = oldnp.data
             newnp._from = ht[h]
@@ -98,8 +98,8 @@ def insert(array, key, data, hash, cmp):
     np.key = key
     np.data = data
     if array.ht[h]:
-        array.ht[h]._from = np.__next__
-    np.next = array.ht[h]
+        array.ht[h]._from = np._next
+    np._next = array.ht[h]
     array.ht[h] = np
     np._from = array.ht[h]
 
@@ -118,7 +118,7 @@ def find(array, key, hash, cmp):
     while np:
         if cmp(np.key, key) == 0:
             break
-        np = np.__next__
+        np = np._next
 
     return np.data if np else None
 

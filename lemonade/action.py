@@ -21,13 +21,13 @@ def actioncmp(ap1, ap2):
 def Action_sort(ap):
     '''Sort parser actions.'''
     from .msort import msort
-    ap = msort(ap, 'next', actioncmp)
+    ap = msort(ap, '_next', actioncmp)
     return ap
 
 
 def Action_add(app, type, sp, arg):
     new = action(
-        next = app,
+        _next = app,
         type = type,
         sp = sp,
         collide = None,

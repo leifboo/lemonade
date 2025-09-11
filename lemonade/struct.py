@@ -63,7 +63,7 @@ rule = struct(
         'index',        # An index number for this rule
         'canReduce',    # True if this rule is ever reduced
         'nextlhs',      # Next rule with the same LHS
-        'next',         # Next rule in the global list
+        '_next',        # Next rule in the global list
         )
     )
 
@@ -90,7 +90,7 @@ config = struct(
         'bplp',         # Follow-set backwards propagation links
         'stp',          # Pointer to state which contains this
         'status',       # The status is used during followset and shift computations
-        'next',         # Next configuration in the state
+        '_next',        # Next configuration in the state
         'bp',           # The next basis configuration
         )
     )
@@ -119,7 +119,7 @@ action = struct(
         'type',
         'stp',          # The new state, if a shift
         'rp',           # The rule, if a reduce
-        'next',         # Next action for this state
+        '_next',        # Next action for this state
         'collide',      # Next action with the same hash
         )
     )
@@ -155,7 +155,7 @@ plink = struct(
     'plink',
     (
         'cfp',          # The configuration to which linked
-        'next',         # The next propagate link
+        '_next',        # The next propagate link
         )
     )
 

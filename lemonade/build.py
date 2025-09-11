@@ -350,14 +350,14 @@ def FindActions(lemp):
         stp = lemp.sorted[i]
         stp.ap = Action_sort(stp.ap)
         ap = stp.ap
-        while ap and ap.__next__:
-            nap = ap.__next__
+        while ap and ap._next:
+            nap = ap._next
             while nap and nap.sp == ap.sp:
                 # The two actions "ap" and "nap" have the same
                 # lookahead.  Figure out which one should be used.
                 lemp.nconflict += resolve_conflict(ap, nap)
-                nap = nap.__next__
-            ap = ap.__next__
+                nap = nap._next
+            ap = ap._next
 
     # Report an error for each rule that can never be reduced.
     for rp in iterlinks(lemp.rule):

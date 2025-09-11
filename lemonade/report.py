@@ -10,6 +10,8 @@ from .table import *
 
 from sys import stderr
 
+import functools
+
 
 def file_makename(lemp, suffix):
     '''Generate a filename with the given suffix.'''
@@ -171,7 +173,7 @@ def ReportOutput(lemp):
             if lemp.basisflag:
                 cfp = cfp.bp
             else:
-                cfp = cfp.__next__
+                cfp = cfp._next
 
         fprintf(fp, "\n")
         for ap in iterlinks(stp.ap):
@@ -244,6 +246,7 @@ def tplt_xfer(name, _in, out):
     indent = ''
 
     for line in _in:
+        line = line.decode('utf-8')
         pos = line.find('%%')
         if pos != -1:
             indent = line[:pos]
@@ -452,7 +455,7 @@ def ReportTable(lemp, outputStream=None):
     mxTknOfst = mnTknOfst = 0
     mxNtOfst = mnNtOfst = 0
 
-    ax.sort(cmp = axset_compare)
+    ax.sort(key = functools.cmp_to_key(axset_compare))
     pActtab = acttab_alloc()
 
     i = 0
@@ -758,7 +761,7 @@ def CompressTables(lemp):
                 continue
 
             n = 1
-            for ap2 in iterlinks(ap.__next__):
+            for ap2 in iterlinks(ap._next):
                 if ap2.type != REDUCE:
                     continue
 
@@ -785,7 +788,7 @@ def CompressTables(lemp):
                 break
         assert ap
         ap.sp = Symbol_new("{default}")
-        for ap in iterlinks(ap.__next__):
+        for ap in iterlinks(ap._next):
             if ap.type == REDUCE and ap.x.rp == rbest:
                 ap.type = NOT_USED
         stp.ap = Action_sort(stp.ap)
@@ -827,7 +830,7 @@ def ResortStates(lemp):
                     stp.iDflt = compute_action(lemp, ap)
 
     lemp.sorted = ([lemp.sorted[0]] +
-                   sorted(lemp.sorted[1:], cmp = stateResortCompare))
+                   sorted(lemp.sorted[1:], key=functools.cmp_to_key(stateResortCompare)))
 
     for i in range(lemp.nstate):
         lemp.sorted[i].statenum = i

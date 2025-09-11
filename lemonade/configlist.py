@@ -26,7 +26,7 @@ def config_model(rp, dot):
         bplp = None,
         stp = None,
         status = 0,
-        next = None,
+        _next = None,
         bp = None,
         )
 
@@ -71,12 +71,12 @@ def Configlist_add(rp, dot):
             bplp = None,
             stp = None,
             status = 0,
-            next = None,
+            _next = None,
             bp = None,
             )
 
         if currentend:
-            currentend.next = cfp
+            currentend._next = cfp
         else:
             current = cfp
         currentend = cfp
@@ -102,12 +102,12 @@ def Configlist_addbasis(rp, dot):
             bplp = None,
             stp = None,
             status = 0,
-            next = None,
+            _next = None,
             bp = None,
             )
 
         if currentend:
-            currentend.next = cfp
+            currentend._next = cfp
         else:
             current = cfp
         currentend = cfp
@@ -164,7 +164,7 @@ def Configlist_sort():
     '''Sort the configuration list.'''
     from .msort import msort
     global current, currentend
-    current = msort(current, 'next', Configcmp)
+    current = msort(current, '_next', Configcmp)
     currentend = None
     return
 

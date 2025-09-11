@@ -1,10 +1,10 @@
 
 
-def iterlinks(head, next='next'):
+def iterlinks(head, next_attr='_next'):
     link = head
     while link:
         yield link
-        link = getattr(link, next)
+        link = getattr(link, next_attr)
     return
 
 

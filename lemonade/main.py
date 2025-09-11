@@ -12,6 +12,8 @@ from .ccruft import printf
 from sys import stderr
 from optparse import OptionParser
 
+import functools
+
 
 def main(argv):
     '''The main program.  Parse the command line and do it...'''
@@ -115,7 +117,7 @@ def generate(inputFile,
     lem.symbols = Symbol_arrayof()
     for i in range(lem.nsymbol + 1):
         lem.symbols[i].index = i
-    lem.symbols.sort(cmp=Symbolcmpp)
+    lem.symbols.sort(key=functools.cmp_to_key(Symbolcmpp))
     for i in range(lem.nsymbol + 1):
         lem.symbols[i].index = i
     i = 1

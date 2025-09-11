@@ -195,7 +195,7 @@ def parseonetoken(psp, x):
                 line = 0,
                 canReduce = False,
                 nextlhs = None,
-                next = None,
+                _next = None,
                 )
             psp.gp.nrule += 1
             rp.nextlhs = rp.lhs.rule
@@ -203,7 +203,7 @@ def parseonetoken(psp, x):
             if psp.firstrule is None:
                 psp.firstrule = psp.lastrule = rp
             else:
-                psp.lastrule.next = rp
+                psp.lastrule._next = rp
                 psp.lastrule = rp
             psp.prevrule = rp
 
@@ -460,6 +460,8 @@ def Parse(gp):
 
 
     # Now scan the text of the input file
+
+    filebuf = filebuf.decode('utf-8')
 
     cp = 0
     while cp < len(filebuf):
