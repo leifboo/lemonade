@@ -30,9 +30,9 @@ tokenType = {
 
 def tokenize(input):
     import re
-    tokenText = re.split("([+-/*])|\s*", input)
+    tokenText = re.split("([+\-/*])|\s*", input)
     for text in tokenText:
-        if text is None:
+        if not text:
             continue
         type = tokenType.get(text)
         if type is None:
