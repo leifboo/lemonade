@@ -1,9 +1,12 @@
 
 from distutils.core import setup
+from pathlib import Path
 
 setup(name = 'lemonade',
-      version = '1.0b2',
+      version = '1.0b4',
+      url = 'https://github.com/leifboo/lemonade',
       description = 'Port of the LEMON Parser Generator',
+      long_description = (Path(__file__).parent / 'README').read_text(),
 
       scripts = ['bin/lemonade'],
       packages = ['lemonade'],
